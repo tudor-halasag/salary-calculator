@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Salary Calculator</title>
+  <meta name="description" content="Professional gross-to-net salary calculator with real-time breakdown, tax configuration, multi-currency support, and PDF export." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f5f4f0;
+      --bg-card: #ffffff;
+      --bg-input: #f9f8f5;
+      --bg-accent: #0a0a0a;
+      --text-primary: #0a0a0a;
+      --text-secondary: #6b6b6b;
+      --text-muted: #9a9a9a;
+      --text-on-dark: #ffffff;
+      --border: #e4e2dc;
+      --border-strong: #c8c5bc;
+      --accent: #1a5276;
+      --accent-light: #d6e8f7;
+      --green: #1a7a4a;
+      --green-light: #d4edde;
+      --amber: #b45309;
+      --amber-light: #fef3c7;
+      --red: #991b1b;
+      --red-light: #fee2e2;
+      --purple: #6d28d9;
+      --purple-light: #ede9fe;
+      --font: 'DM Sans', sans-serif;
+      --mono: 'DM Mono', monospace;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --radius-xs: 5px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 12px 40px rgba(0,0,0,0.06);
+      --transition: 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    [data-theme="dark"] {
+      --bg: #111110;
+      --bg-card: #1c1c1a;
+      --bg-input: #242422;
+      --bg-accent: #f5f4f0;
+      --text-primary: #f0efe9;
+      --text-secondary: #a0a09a;
+      --text-muted: #606060;
+      --text-on-dark: #0a0a0a;
+      --border: #2a2a28;
+      --border-strong: #3a3a38;
+      --accent: #5b9bd5;
+      --accent-light: #1a2d3f;
+      --green: #34d399;
+      --green-light: #0d2a1f;
+      --amber: #fbbf24;
+      --amber-light: #2a1f0a;
+      --red: #f87171;
+      --red-light: #2a0f0f;
+      --purple: #a78bfa;
+      --purple-light: #1e1530;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.4), 0 12px 40px rgba(0,0,0,0.3);
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      transition: background var(--transition), color var(--transition);
+      -webkit-font-smoothing: antialiased;
+    }
+    #root { min-height: 100vh; }
+
+    /* Slider base styles */
+    input[type=range] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--border);
+      outline: none;
+      cursor: pointer;
+      transition: background var(--transition);
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 3px solid var(--bg-card);
+      box-shadow: 0 0 0 1px var(--border-strong);
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    input[type=range]:hover::-webkit-slider-thumb {
+      transform: scale(1.2);
+      box-shadow: 0 0 0 3px var(--accent-light);
+    }
+    input[type=range]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 3px solid var(--bg-card);
+      cursor: pointer;
+    }
+
+    /* Print styles */
+    @media print {
+      body { background: white !important; }
+      .no-print { display: none !important; }
+      .print-only { display: block !important; }
+      .card { box-shadow: none !important; border: 1px solid #ddd !important; }
+    }
+    .print-only { display: none; }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulseNum {
+      0% { opacity: 1; }
+      30% { opacity: 0.4; }
+      100% { opacity: 1; }
+    }
+    .animate-in { animation: fadeIn 0.3s ease forwards; }
+    .pulse { animation: pulseNum 0.3s ease; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel" src="src/app.jsx"></script>
+</body>
+</html>
