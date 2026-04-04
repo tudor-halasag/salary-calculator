@@ -460,11 +460,12 @@ function App() {
       {/* Topbar */}
       <div style={S.topbar} className="no-print">
         <div style={S.logo}>
-          <div style={S.logoMark}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-on-dark)" strokeWidth="2" strokeLinecap="round">
-              <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-            </svg>
-          </div>
+          <img
+            src="tahlogo.svg"
+            alt="Tudor Halasag"
+            style={{ height: 32, width: 'auto', display: 'block' }}
+            onError={e => { e.target.style.display = 'none'; }}
+          />
           <span style={S.logoText}>SalaryCalc</span>
         </div>
 
@@ -497,9 +498,12 @@ function App() {
       </div>
 
       {/* Print header */}
-      <div className="print-only" style={{ padding: '20px 40px 0', borderBottom: '2px solid #ccc', marginBottom: 20 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 600 }}>Salary Calculation Report</h1>
-        <p style={{ color: '#666', fontSize: 14 }}>Generated {new Date().toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' })} · {period === 'monthly' ? 'Monthly' : 'Yearly'} · {currency}</p>
+      <div className="print-only" style={{ padding: '20px 40px 0', borderBottom: '2px solid #ccc', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 16 }}>
+        <img src="tahlogo.svg" alt="Tudor Halasag" style={{ height: 36, width: 'auto' }} />
+        <div>
+          <h1 style={{ fontSize: 24, fontWeight: 600 }}>Salary Calculation Report</h1>
+          <p style={{ color: '#666', fontSize: 14 }}>Generated {new Date().toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' })} · {period === 'monthly' ? 'Monthly' : 'Yearly'} · {currency}</p>
+        </div>
       </div>
 
       <div style={S.container}>
