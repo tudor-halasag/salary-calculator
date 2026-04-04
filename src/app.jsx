@@ -641,7 +641,7 @@ function App() {
         position: 'sticky', top: 0, zIndex: 200,
       }}>
         {/* Logo — 180px wide, links to portfolio */}
-        <a href="https://tudor-halasag.github.io" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', flexShrink: 0 }}>
+        <a href="https://tudor-halasag.github.io/salary-calculator" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', flexShrink: 0 }}>
           <img
             src="tahlogo.svg"
             alt="Tudor Halasag"
