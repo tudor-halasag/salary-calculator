@@ -3,124 +3,146 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SalaryCalc — by Tudor Halasag</title>
-  <meta name="description" content="Professional gross-to-net salary calculator with real-time breakdown, multi-currency support, and PDF export." />
+  <title>Tudor Andrei Halasag — Salary Calculator</title>
+  <meta name="description" content="Real-time Romanian gross-to-net salary calculator with live currency conversion. Built by Tudor Andrei Halasag." />
 
   <!-- Favicons -->
-  <link rel="icon" type="image/svg+xml" href="tahlogo.svg" />
-  <link rel="icon" type="image/png" sizes="32x32" href="tahlogo.svg" />
-  <link rel="apple-touch-icon" href="tahlogo.svg" />
-  <link rel="shortcut icon" href="tahlogo.svg" />
-  <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
-  <meta name="theme-color" content="#f5f4f0" media="(prefers-color-scheme: light)" />
+  <link rel="icon" type="image/svg+xml" href="tahfavblack.svg" />
+  <link rel="icon" type="image/png" href="apple-black-icon.png" sizes="180x180" />
+  <link rel="apple-touch-icon" href="apple-black-icon.png" />
+  <link rel="shortcut icon" href="tahfavblack.svg" />
+  <meta name="theme-color" content="#000000" />
 
-  <!-- Open Graph -->
-  <meta property="og:title" content="SalaryCalc — by Tudor Halasag" />
-  <meta property="og:description" content="Professional gross-to-net salary calculator with real-time breakdown, multi-currency support, and PDF export." />
-  <meta property="og:image" content="tahlogo.svg" />
+  <!-- Open Graph / Search preview -->
+  <meta property="og:title" content="Tudor Andrei Halasag — Salary Calculator" />
+  <meta property="og:description" content="Real-time Romanian gross-to-net salary calculator with live currency conversion." />
+  <meta property="og:image" content="apple-black-icon.png" />
   <meta property="og:url" content="https://tudor-halasag.github.io/salary-calculator/" />
+  <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary" />
+  <meta name="twitter:image" content="apple-black-icon.png" />
 
-  <!-- Fonts: DM Sans body + Playfair Display for report heading -->
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@600&display=swap" rel="stylesheet" />
 
-  <!-- React + Babel + Chart.js -->
+  <!-- React 18 + Babel + Chart.js -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- jsPDF for clean single-page PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    /* ── CSS variables ── */
     :root {
-      /* Surfaces */
-      --bg:           #f5f4f0;
-      --bg-card:      #ffffff;
-      --bg-input:     #f0efe9;
-      --bg-accent:    #0a0a0a;
-      /* Text */
-      --text-primary:   #0a0a0a;
-      --text-secondary: #6b6b6b;
-      --text-muted:     #9a9a9a;
-      --text-on-dark:   #ffffff;
-      /* Borders */
-      --border:        #dddbd4;
-      --border-strong: #c8c5bc;
-      /* Semantic colours */
+      --bg:            transparent;
+      --bg-card:       rgba(255,255,255,0.82);
+      --bg-input:      rgba(240,239,234,0.9);
+      --bg-accent:     #0a0a0a;
+      --text-primary:  #0a0a0a;
+      --text-secondary:#5a5a5a;
+      --text-muted:    #8a8a8a;
+      --text-on-dark:  #ffffff;
+      --border:        rgba(0,0,0,0.10);
+      --border-strong: rgba(0,0,0,0.18);
       --accent:        #1a5276;
-      --accent-light:  #d6e8f7;
+      --accent-light:  rgba(26,82,118,0.12);
       --green:         #1a7a4a;
-      --green-light:   #d4edde;
+      --green-light:   rgba(26,122,74,0.12);
       --amber:         #b45309;
-      --amber-light:   #fef3c7;
-      --red:           #991b1b;
-      --red-light:     #fee2e2;
+      --amber-light:   rgba(180,83,9,0.10);
       --purple:        #6d28d9;
-      --purple-light:  #ede9fe;
-      /* Hero card — solid dark in light mode */
-      --hero-bg:       #0a0a0a;
+      --purple-light:  rgba(109,40,217,0.10);
+      --hero-bg:       rgba(10,10,10,0.88);
       --hero-text:     #ffffff;
-      --hero-muted:    rgba(255,255,255,0.5);
-      --hero-sub:      rgba(255,255,255,0.75);
-      /* Input glow */
-      --glow-light: 0 0 0 2px rgba(10,10,10,0.08), 0 0 16px rgba(10,10,10,0.12);
-      --glow-focus: 0 0 0 3px rgba(26,82,118,0.18), 0 0 20px rgba(26,82,118,0.14);
-      /* Misc */
-      --font:       'DM Sans', sans-serif;
-      --mono:       'DM Mono', monospace;
-      --serif:      'Playfair Display', serif;
-      --radius:     12px;
-      --radius-sm:  8px;
-      --radius-xs:  5px;
-      --shadow:     0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
-      --transition: 0.18s cubic-bezier(0.4,0,0.2,1);
+      --hero-muted:    rgba(255,255,255,0.45);
+      --hero-sub:      rgba(255,255,255,0.72);
+      --glow-focus:    0 0 0 3px rgba(26,82,118,0.22), 0 0 18px rgba(26,82,118,0.16);
+      --glow-idle:     0 0 0 1.5px rgba(0,0,0,0.06), 0 2px 14px rgba(0,0,0,0.08);
+      --font:          'DM Sans', sans-serif;
+      --mono:          'DM Mono', monospace;
+      --serif:         'Playfair Display', serif;
+      --radius:        14px;
+      --radius-sm:     9px;
+      --shadow:        0 2px 8px rgba(0,0,0,0.07), 0 8px 28px rgba(0,0,0,0.07);
+      --card-blur:     blur(12px) saturate(160%);
+      --transition:    0.18s cubic-bezier(0.4,0,0.2,1);
     }
 
     [data-theme="dark"] {
-      --bg:           #111110;
-      --bg-card:      #1c1c1a;
-      --bg-input:     #252523;
-      --bg-accent:    #f0efe9;
-      --text-primary:   #f0efe9;
-      --text-secondary: #a0a09a;
-      --text-muted:     #606060;
-      --text-on-dark:   #0a0a0a;
-      --border:        #2e2e2b;
-      --border-strong: #3e3e3a;
+      --bg-card:       rgba(22,22,20,0.82);
+      --bg-input:      rgba(30,30,28,0.90);
+      --bg-accent:     rgba(240,239,233,0.92);
+      --text-primary:  #f0efe9;
+      --text-secondary:#9a9a94;
+      --text-muted:    #5a5a58;
+      --text-on-dark:  #0a0a0a;
+      --border:        rgba(255,255,255,0.08);
+      --border-strong: rgba(255,255,255,0.14);
       --accent:        #5b9bd5;
-      --accent-light:  #1a2d3f;
+      --accent-light:  rgba(91,155,213,0.15);
       --green:         #34d399;
-      --green-light:   #0d2a1f;
+      --green-light:   rgba(52,211,153,0.12);
       --amber:         #fbbf24;
-      --amber-light:   #2a1f0a;
-      --red:           #f87171;
-      --red-light:     #2a0f0f;
+      --amber-light:   rgba(251,191,36,0.11);
       --purple:        #a78bfa;
-      --purple-light:  #1e1530;
-      /* Hero card — bright card in dark mode so text is clearly dark-on-light */
-      --hero-bg:    #f0efe9;
-      --hero-text:  #0a0a0a;
-      --hero-muted: rgba(10,10,10,0.45);
-      --hero-sub:   rgba(10,10,10,0.7);
-      /* Input glow flips to white */
-      --glow-light: 0 0 0 2px rgba(240,239,233,0.08), 0 0 16px rgba(240,239,233,0.08);
-      --glow-focus: 0 0 0 3px rgba(91,155,213,0.22), 0 0 20px rgba(91,155,213,0.16);
-      --shadow:     0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2);
+      --purple-light:  rgba(167,139,250,0.12);
+      --hero-bg:       rgba(240,239,233,0.92);
+      --hero-text:     #0a0a0a;
+      --hero-muted:    rgba(10,10,10,0.45);
+      --hero-sub:      rgba(10,10,10,0.72);
+      --glow-focus:    0 0 0 3px rgba(91,155,213,0.28), 0 0 18px rgba(91,155,213,0.18);
+      --glow-idle:     0 0 0 1.5px rgba(255,255,255,0.06), 0 2px 14px rgba(255,255,255,0.05);
+      --shadow:        0 2px 8px rgba(0,0,0,0.35), 0 8px 28px rgba(0,0,0,0.28);
     }
 
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; height: 100%; }
+
     body {
       font-family: var(--font);
-      background: var(--bg);
       color: var(--text-primary);
       min-height: 100vh;
-      transition: background var(--transition), color var(--transition);
       -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      /* pitch-black base for the particle canvas */
+      background: #000000;
+      transition: color var(--transition);
     }
-    #root { min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* ── Background canvas ── */
+    #bg-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      display: block;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    #root {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Glassmorphism card ── */
+    .glass {
+      background: var(--bg-card);
+      backdrop-filter: var(--card-blur);
+      -webkit-backdrop-filter: var(--card-blur);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
 
     /* ── Range slider ── */
     input[type=range] {
@@ -131,24 +153,23 @@
     }
     input[type=range]::-webkit-slider-thumb {
       -webkit-appearance: none; appearance: none;
-      width: 18px; height: 18px; border-radius: 50%;
+      width: 17px; height: 17px; border-radius: 50%;
       background: var(--accent);
       border: 3px solid var(--bg-card);
-      box-shadow: 0 0 0 1px var(--border-strong);
+      box-shadow: 0 0 0 1.5px var(--border-strong);
       cursor: pointer;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      transition: transform 0.14s ease, box-shadow 0.14s ease;
     }
     input[type=range]:hover::-webkit-slider-thumb {
       transform: scale(1.2);
       box-shadow: 0 0 0 3px var(--accent-light);
     }
     input[type=range]::-moz-range-thumb {
-      width: 18px; height: 18px; border-radius: 50%;
-      background: var(--accent);
-      border: 3px solid var(--bg-card); cursor: pointer;
+      width: 17px; height: 17px; border-radius: 50%;
+      background: var(--accent); border: 3px solid var(--bg-card); cursor: pointer;
     }
 
-    /* ── Input number — remove arrows ── */
+    /* ── Number inputs ── */
     input[type=number]::-webkit-outer-spin-button,
     input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     input[type=number] { -moz-appearance: textfield; }
@@ -160,54 +181,205 @@
     }
     @keyframes pulseNum {
       0%   { opacity: 1; }
-      30%  { opacity: 0.35; }
+      30%  { opacity: 0.3; }
       100% { opacity: 1; }
     }
-    @keyframes glowPulse {
-      0%, 100% { box-shadow: 0 0 8px rgba(34,197,94,0.4), 0 0 24px rgba(34,197,94,0.2); }
-      50%       { box-shadow: 0 0 14px rgba(34,197,94,0.7), 0 0 40px rgba(34,197,94,0.3); }
+    @keyframes greenGlow {
+      0%,100% { box-shadow: 0 0 7px rgba(34,197,94,0.5), 0 0 20px rgba(34,197,94,0.25); }
+      50%      { box-shadow: 0 0 13px rgba(34,197,94,0.8), 0 0 36px rgba(34,197,94,0.35); }
     }
-    .animate-in  { animation: fadeUp 0.28s ease forwards; }
-    .pulse-num   { animation: pulseNum 0.28s ease; }
 
-    /* ── About me button glow ── */
+    .animate-in  { animation: fadeUp 0.28s ease forwards; }
+    .pulse-num   { animation: pulseNum 0.26s ease; }
+
+    /* ── Logo invert in dark ── */
+    [data-theme="dark"] .logo-img { filter: invert(1); }
+
+    /* ── About me glowing button ── */
     .btn-about {
-      display: inline-flex; align-items: center; gap: 7px;
-      padding: 8px 18px; border-radius: 20px;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 16px; border-radius: 20px;
       font-family: var(--font); font-size: 13px; font-weight: 600;
       color: #fff; background: #16a34a;
       border: none; cursor: pointer; text-decoration: none;
-      animation: glowPulse 2.4s ease-in-out infinite;
-      transition: transform 0.15s ease, filter 0.15s ease;
-      white-space: nowrap;
+      animation: greenGlow 2.6s ease-in-out infinite;
+      transition: transform 0.14s ease, filter 0.14s ease;
+      white-space: nowrap; flex-shrink: 0;
     }
-    .btn-about:hover { transform: scale(1.04); filter: brightness(1.1); }
+    .btn-about:hover { transform: scale(1.05); filter: brightness(1.12); }
 
-    /* ── Logo colour inversion for dark mode ── */
-    [data-theme="dark"] .logo-img { filter: invert(1); }
+    /* ── Theme toggle icon btn ── */
+    .icon-btn {
+      width: 34px; height: 34px; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--bg-input);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      color: var(--text-secondary); transition: all 0.14s ease; flex-shrink: 0;
+    }
+    .icon-btn:hover { border-color: var(--border-strong); }
 
     /* ── Print ── */
     @media print {
-      body { background: white !important; color: black !important; }
-      .no-print { display: none !important; }
-      .print-only { display: flex !important; }
-      .hero-card { background: #f8f8f8 !important; color: #000 !important; }
-      .hero-card * { color: #000 !important; }
+      #bg-canvas, .no-print { display: none !important; }
+      body { background: white !important; }
+      .glass { background: white !important; backdrop-filter: none !important; box-shadow: none !important; border: 1px solid #ddd !important; }
     }
     .print-only { display: none; }
 
     /* ── Responsive ── */
-    @media (max-width: 760px) {
-      .main-grid    { grid-template-columns: 1fr !important; }
-      .panel-drawer { position: fixed !important; bottom: 0; left: 0; right: 0;
-                      max-height: 80vh; overflow-y: auto; z-index: 200;
-                      border-radius: 16px 16px 0 0 !important;
-                      box-shadow: 0 -4px 32px rgba(0,0,0,0.2); }
+    @media (max-width: 720px) {
+      .main-grid { grid-template-columns: 1fr !important; }
+      .panel-col { display: none !important; }
+      .mobile-settings-btn { display: flex !important; }
+      .inner-breakdown-grid { grid-template-columns: 1fr !important; }
+      .salary-inputs-row { flex-direction: column !important; }
+    }
+    @media (min-width: 721px) {
+      .mobile-settings-btn { display: none !important; }
     }
   </style>
 </head>
 <body>
+  <!-- Particle background canvas -->
+  <canvas id="bg-canvas"></canvas>
+
   <div id="root"></div>
+
+  <!-- Background particle script (runs immediately, before React) -->
+  <script>
+  (function() {
+    const isMobile = /Mobi|Android/i.test(navigator.userAgent) || window.innerWidth < 721;
+
+    const CONFIG = {
+      baseDensity:    0.12,
+      maxSpeed:       0.6,
+      radius:         [1.0, 2.2],
+      linkDist:       110,
+      linkAlpha:      0.16,
+      mouseInfluence: 110,
+      repelStrength:  0.35,
+      clickBurst:     120,
+      colorParticle:  "#c9e7ff",
+      colorLink:      "#7dd3fc"
+    };
+
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d', { alpha: true });
+    let DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    let W = 0, H = 0;
+
+    function resize() {
+      DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+      W = canvas.width  = Math.floor(window.innerWidth  * DPR);
+      H = canvas.height = Math.floor(window.innerHeight * DPR);
+      canvas.style.width  = window.innerWidth  + 'px';
+      canvas.style.height = window.innerHeight + 'px';
+      computeCount();
+    }
+    window.addEventListener('resize', resize, { passive: true });
+
+    let particles = [];
+
+    function rand(a, b) { return Math.random() * (b - a) + a; }
+    function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+    class Particle {
+      constructor() { this.reset(true); }
+      reset(rnd) {
+        this.x = rnd ? rand(0, W) : (Math.random() < .5 ? 0 : W);
+        this.y = rnd ? rand(0, H) : rand(0, H);
+        const ang = rand(0, Math.PI * 2), sp = rand(0.05, CONFIG.maxSpeed);
+        this.vx = Math.cos(ang) * sp;
+        this.vy = Math.sin(ang) * sp;
+        this.r = rand(CONFIG.radius[0], CONFIG.radius[1]) * DPR;
+      }
+      step(mx, my) {
+        /* Mouse influence — desktop only */
+        if (!isMobile && mx !== null && my !== null) {
+          const dx = this.x - mx, dy = this.y - my;
+          const d2 = dx*dx + dy*dy;
+          const rr = CONFIG.mouseInfluence * DPR;
+          if (d2 < rr*rr) {
+            const d = Math.sqrt(d2) || 0.001;
+            const f = CONFIG.repelStrength * (1 - d/rr);
+            this.vx += (dx/d) * f;
+            this.vy += (dy/d) * f;
+          }
+        }
+        const sp = Math.hypot(this.vx, this.vy);
+        if (sp > CONFIG.maxSpeed) { this.vx *= CONFIG.maxSpeed/sp; this.vy *= CONFIG.maxSpeed/sp; }
+        this.x += this.vx * DPR;
+        this.y += this.vy * DPR;
+        if (this.x < -50) this.x = W + 50;
+        if (this.x > W+50) this.x = -50;
+        if (this.y < -50) this.y = H + 50;
+        if (this.y > H+50) this.y = -50;
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
+        ctx.fillStyle = CONFIG.colorParticle;
+        ctx.globalAlpha = 0.9;
+        ctx.fill();
+      }
+    }
+
+    function computeCount() {
+      const area = (W*H) / (DPR*DPR);
+      let target = Math.round(CONFIG.baseDensity * (area / 10000));
+      target = clamp(target, 40, 220);
+      while (particles.length < target) particles.push(new Particle());
+      if (particles.length > target) particles.length = target;
+    }
+
+    const mouse = { x: null, y: null };
+    if (!isMobile) {
+      window.addEventListener('mousemove', e => { mouse.x = e.clientX * DPR; mouse.y = e.clientY * DPR; }, { passive: true });
+      window.addEventListener('mouseleave', () => { mouse.x = mouse.y = null; });
+      window.addEventListener('click', e => {
+        const mx = e.clientX * DPR, my = e.clientY * DPR;
+        particles.forEach(p => {
+          const dx = p.x - mx, dy = p.y - my;
+          const d2 = dx*dx + dy*dy, rr = CONFIG.mouseInfluence * DPR;
+          if (d2 < rr*rr) {
+            const d = Math.sqrt(d2) || 0.001;
+            p.vx += (dx/d) * (CONFIG.clickBurst/100);
+            p.vy += (dy/d) * (CONFIG.clickBurst/100);
+          }
+        });
+      });
+    }
+
+    function drawLinks() {
+      ctx.lineWidth = 1 * DPR;
+      ctx.strokeStyle = CONFIG.colorLink;
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i+1; j < particles.length; j++) {
+          const a = particles[i], b = particles[j];
+          const dist = Math.hypot(a.x - b.x, a.y - b.y);
+          if (dist < CONFIG.linkDist * DPR) {
+            ctx.globalAlpha = CONFIG.linkAlpha * (1 - dist / (CONFIG.linkDist * DPR));
+            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+          }
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    function loop() {
+      ctx.clearRect(0, 0, W, H);
+      particles.forEach(p => p.step(mouse.x, mouse.y));
+      drawLinks();
+      particles.forEach(p => p.draw());
+      requestAnimationFrame(loop);
+    }
+
+    resize();
+    for (let i = 0; i < 120; i++) particles.push(new Particle());
+    computeCount();
+    loop();
+  })();
+  </script>
+
   <script type="text/babel" src="src/app.jsx"></script>
 </body>
 </html>
