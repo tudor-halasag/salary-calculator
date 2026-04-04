@@ -3,84 +3,114 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Salary Calculator</title>
-  <meta name="description" content="Professional gross-to-net salary calculator with real-time breakdown, tax configuration, multi-currency support, and PDF export." />
-  <!-- Favicons — drop tahlogo.svg into the repo root and these all resolve automatically -->
+  <title>SalaryCalc — by Tudor Halasag</title>
+  <meta name="description" content="Professional gross-to-net salary calculator with real-time breakdown, multi-currency support, and PDF export." />
+
+  <!-- Favicons -->
   <link rel="icon" type="image/svg+xml" href="tahlogo.svg" />
   <link rel="icon" type="image/png" sizes="32x32" href="tahlogo.svg" />
   <link rel="apple-touch-icon" href="tahlogo.svg" />
   <link rel="shortcut icon" href="tahlogo.svg" />
   <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
   <meta name="theme-color" content="#f5f4f0" media="(prefers-color-scheme: light)" />
-  <!-- Open Graph / share preview -->
+
+  <!-- Open Graph -->
   <meta property="og:title" content="SalaryCalc — by Tudor Halasag" />
   <meta property="og:description" content="Professional gross-to-net salary calculator with real-time breakdown, multi-currency support, and PDF export." />
   <meta property="og:image" content="tahlogo.svg" />
   <meta property="og:url" content="https://tudor-halasag.github.io/salary-calculator/" />
   <meta name="twitter:card" content="summary" />
+
+  <!-- Fonts: DM Sans body + Playfair Display for report heading -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@600&display=swap" rel="stylesheet" />
+
+  <!-- React + Babel + Chart.js -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-      --bg: #f5f4f0;
-      --bg-card: #ffffff;
-      --bg-input: #f9f8f5;
-      --bg-accent: #0a0a0a;
-      --text-primary: #0a0a0a;
+      /* Surfaces */
+      --bg:           #f5f4f0;
+      --bg-card:      #ffffff;
+      --bg-input:     #f0efe9;
+      --bg-accent:    #0a0a0a;
+      /* Text */
+      --text-primary:   #0a0a0a;
       --text-secondary: #6b6b6b;
-      --text-muted: #9a9a9a;
-      --text-on-dark: #ffffff;
-      --border: #e4e2dc;
+      --text-muted:     #9a9a9a;
+      --text-on-dark:   #ffffff;
+      /* Borders */
+      --border:        #dddbd4;
       --border-strong: #c8c5bc;
-      --accent: #1a5276;
-      --accent-light: #d6e8f7;
-      --green: #1a7a4a;
-      --green-light: #d4edde;
-      --amber: #b45309;
-      --amber-light: #fef3c7;
-      --red: #991b1b;
-      --red-light: #fee2e2;
-      --purple: #6d28d9;
-      --purple-light: #ede9fe;
-      --font: 'DM Sans', sans-serif;
-      --mono: 'DM Mono', monospace;
-      --radius: 12px;
-      --radius-sm: 8px;
-      --radius-xs: 5px;
-      --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
-      --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 12px 40px rgba(0,0,0,0.06);
-      --transition: 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+      /* Semantic colours */
+      --accent:        #1a5276;
+      --accent-light:  #d6e8f7;
+      --green:         #1a7a4a;
+      --green-light:   #d4edde;
+      --amber:         #b45309;
+      --amber-light:   #fef3c7;
+      --red:           #991b1b;
+      --red-light:     #fee2e2;
+      --purple:        #6d28d9;
+      --purple-light:  #ede9fe;
+      /* Hero card — solid dark in light mode */
+      --hero-bg:       #0a0a0a;
+      --hero-text:     #ffffff;
+      --hero-muted:    rgba(255,255,255,0.5);
+      --hero-sub:      rgba(255,255,255,0.75);
+      /* Input glow */
+      --glow-light: 0 0 0 2px rgba(10,10,10,0.08), 0 0 16px rgba(10,10,10,0.12);
+      --glow-focus: 0 0 0 3px rgba(26,82,118,0.18), 0 0 20px rgba(26,82,118,0.14);
+      /* Misc */
+      --font:       'DM Sans', sans-serif;
+      --mono:       'DM Mono', monospace;
+      --serif:      'Playfair Display', serif;
+      --radius:     12px;
+      --radius-sm:  8px;
+      --radius-xs:  5px;
+      --shadow:     0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+      --transition: 0.18s cubic-bezier(0.4,0,0.2,1);
     }
+
     [data-theme="dark"] {
-      --bg: #111110;
-      --bg-card: #1c1c1a;
-      --bg-input: #242422;
-      --bg-accent: #f5f4f0;
-      --text-primary: #f0efe9;
+      --bg:           #111110;
+      --bg-card:      #1c1c1a;
+      --bg-input:     #252523;
+      --bg-accent:    #f0efe9;
+      --text-primary:   #f0efe9;
       --text-secondary: #a0a09a;
-      --text-muted: #606060;
-      --text-on-dark: #0a0a0a;
-      --border: #2a2a28;
-      --border-strong: #3a3a38;
-      --accent: #5b9bd5;
-      --accent-light: #1a2d3f;
-      --green: #34d399;
-      --green-light: #0d2a1f;
-      --amber: #fbbf24;
-      --amber-light: #2a1f0a;
-      --red: #f87171;
-      --red-light: #2a0f0f;
-      --purple: #a78bfa;
-      --purple-light: #1e1530;
-      --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2);
-      --shadow-md: 0 4px 12px rgba(0,0,0,0.4), 0 12px 40px rgba(0,0,0,0.3);
+      --text-muted:     #606060;
+      --text-on-dark:   #0a0a0a;
+      --border:        #2e2e2b;
+      --border-strong: #3e3e3a;
+      --accent:        #5b9bd5;
+      --accent-light:  #1a2d3f;
+      --green:         #34d399;
+      --green-light:   #0d2a1f;
+      --amber:         #fbbf24;
+      --amber-light:   #2a1f0a;
+      --red:           #f87171;
+      --red-light:     #2a0f0f;
+      --purple:        #a78bfa;
+      --purple-light:  #1e1530;
+      /* Hero card — bright card in dark mode so text is clearly dark-on-light */
+      --hero-bg:    #f0efe9;
+      --hero-text:  #0a0a0a;
+      --hero-muted: rgba(10,10,10,0.45);
+      --hero-sub:   rgba(10,10,10,0.7);
+      /* Input glow flips to white */
+      --glow-light: 0 0 0 2px rgba(240,239,233,0.08), 0 0 16px rgba(240,239,233,0.08);
+      --glow-focus: 0 0 0 3px rgba(91,155,213,0.22), 0 0 20px rgba(91,155,213,0.16);
+      --shadow:     0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2);
     }
+
     html { scroll-behavior: smooth; }
     body {
       font-family: var(--font);
@@ -90,26 +120,18 @@
       transition: background var(--transition), color var(--transition);
       -webkit-font-smoothing: antialiased;
     }
-    #root { min-height: 100vh; }
+    #root { min-height: 100vh; display: flex; flex-direction: column; }
 
-    /* Slider base styles */
+    /* ── Range slider ── */
     input[type=range] {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 100%;
-      height: 4px;
-      border-radius: 2px;
-      background: var(--border);
-      outline: none;
-      cursor: pointer;
+      -webkit-appearance: none; appearance: none;
+      width: 100%; height: 4px; border-radius: 2px;
+      background: var(--border); outline: none; cursor: pointer;
       transition: background var(--transition);
     }
     input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
+      -webkit-appearance: none; appearance: none;
+      width: 18px; height: 18px; border-radius: 50%;
       background: var(--accent);
       border: 3px solid var(--bg-card);
       box-shadow: 0 0 0 1px var(--border-strong);
@@ -121,35 +143,67 @@
       box-shadow: 0 0 0 3px var(--accent-light);
     }
     input[type=range]::-moz-range-thumb {
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
+      width: 18px; height: 18px; border-radius: 50%;
       background: var(--accent);
-      border: 3px solid var(--bg-card);
-      cursor: pointer;
+      border: 3px solid var(--bg-card); cursor: pointer;
     }
 
-    /* Print styles */
+    /* ── Input number — remove arrows ── */
+    input[type=number]::-webkit-outer-spin-button,
+    input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type=number] { -moz-appearance: textfield; }
+
+    /* ── Animations ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulseNum {
+      0%   { opacity: 1; }
+      30%  { opacity: 0.35; }
+      100% { opacity: 1; }
+    }
+    @keyframes glowPulse {
+      0%, 100% { box-shadow: 0 0 8px rgba(34,197,94,0.4), 0 0 24px rgba(34,197,94,0.2); }
+      50%       { box-shadow: 0 0 14px rgba(34,197,94,0.7), 0 0 40px rgba(34,197,94,0.3); }
+    }
+    .animate-in  { animation: fadeUp 0.28s ease forwards; }
+    .pulse-num   { animation: pulseNum 0.28s ease; }
+
+    /* ── About me button glow ── */
+    .btn-about {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 8px 18px; border-radius: 20px;
+      font-family: var(--font); font-size: 13px; font-weight: 600;
+      color: #fff; background: #16a34a;
+      border: none; cursor: pointer; text-decoration: none;
+      animation: glowPulse 2.4s ease-in-out infinite;
+      transition: transform 0.15s ease, filter 0.15s ease;
+      white-space: nowrap;
+    }
+    .btn-about:hover { transform: scale(1.04); filter: brightness(1.1); }
+
+    /* ── Logo colour inversion for dark mode ── */
+    [data-theme="dark"] .logo-img { filter: invert(1); }
+
+    /* ── Print ── */
     @media print {
-      body { background: white !important; }
+      body { background: white !important; color: black !important; }
       .no-print { display: none !important; }
-      .print-only { display: block !important; }
-      .card { box-shadow: none !important; border: 1px solid #ddd !important; }
+      .print-only { display: flex !important; }
+      .hero-card { background: #f8f8f8 !important; color: #000 !important; }
+      .hero-card * { color: #000 !important; }
     }
     .print-only { display: none; }
 
-    /* Animations */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
+    /* ── Responsive ── */
+    @media (max-width: 760px) {
+      .main-grid    { grid-template-columns: 1fr !important; }
+      .panel-drawer { position: fixed !important; bottom: 0; left: 0; right: 0;
+                      max-height: 80vh; overflow-y: auto; z-index: 200;
+                      border-radius: 16px 16px 0 0 !important;
+                      box-shadow: 0 -4px 32px rgba(0,0,0,0.2); }
     }
-    @keyframes pulseNum {
-      0% { opacity: 1; }
-      30% { opacity: 0.4; }
-      100% { opacity: 1; }
-    }
-    .animate-in { animation: fadeIn 0.3s ease forwards; }
-    .pulse { animation: pulseNum 0.3s ease; }
   </style>
 </head>
 <body>
