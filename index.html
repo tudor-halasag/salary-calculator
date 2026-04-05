@@ -202,8 +202,11 @@
     .animate-in { animation: fadeUp 0.28s ease forwards; }
     .pulse-num  { animation: pulseNum 0.26s ease; }
 
-    /* ── Logo: dark mode → white ── */
-    [data-theme="dark"] .logo-img { filter: invert(1); }
+    /* ── Logo: force pure black in light mode, pure white in dark mode.
+       brightness(0) renders every pixel black; invert(1) then flips to white.
+       This works regardless of what colours are inside the SVG file. ── */
+    .logo-img { filter: brightness(0); }
+    [data-theme="dark"] .logo-img { filter: brightness(0) invert(1); }
 
     /* ── About me button ── */
     .btn-about {
