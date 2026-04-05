@@ -67,7 +67,37 @@ function grossFromNet(targetNet, mealVoucherNet = 0, tol = 0.01) {
   return (lo + hi) / 2;
 }
 
-/* ─── Constants ─────────────────────────────────────────────── */
+/* Custom profile calculation — simple flat rates, no personal deduction logic */
+function calcCustom(grossMonthly, rates, mealVoucherNet = 0) {
+  const g    = Math.max(0, parseFloat(grossMonthly) || 0);
+  const cas  = g * (rates.cas       / 100);
+  const cass = g * (rates.cass      / 100);
+  const taxable    = Math.max(0, g - cas - cass);
+  const income_tax = taxable * (rates.incomeTax / 100);
+  const net  = g - cas - cass - income_tax + mealVoucherNet;
+  const cam  = 0.0225 * g;
+  return {
+    gross: g, net, cas, cass, income_tax,
+    dp: 0, contribBase: g, taxable,
+    cam, extra_cas: 0, extra_cass: 0,
+    total_cost: g + cam,
+    totalDeductions: cas + cass + income_tax,
+    mealVoucherNet,
+  };
+}
+
+function grossFromNetCustom(targetNet, rates, tol = 0.01) {
+  let lo = 0, hi = targetNet * 10;
+  for (let i = 0; i < 60; i++) {
+    const mid = (lo + hi) / 2;
+    const result = calcCustom(mid, rates, 0);
+    if (result.net < targetNet) lo = mid; else hi = mid;
+    if (hi - lo < tol) break;
+  }
+  return (lo + hi) / 2;
+}
+
+
 const CONVERT_CURRENCIES = [
   { code: 'EUR', label: 'Euro'            },
   { code: 'USD', label: 'US Dollar'       },
@@ -137,14 +167,16 @@ async function fetchFXRates() {
 }
 
 /* ─── DonutChart ─────────────────────────────────────────────── */
-/* Colours fixed:
-   Net    → green  (#16a34a / #22c55e)
-   CAS    → blue   (#1a5276 / #5b9bd5)
-   CASS   → yellow (#d97706 / #fbbf24)
-   IT     → red    (#dc2626 / #f87171)
+/* Colours — vibrant in BOTH modes:
+   Net    → green
+   CAS    → blue
+   CASS   → amber/yellow
+   IT     → red
 */
-const DONUT_COLOURS_LIGHT = ['#166534', '#1a5276', '#92400e', '#991b1b'];
+const DONUT_COLOURS_LIGHT = ['#16a34a', '#2563eb', '#d97706', '#dc2626'];
 const DONUT_COLOURS_DARK  = ['#22c55e', '#5b9bd5', '#fbbf24', '#f87171'];
+const LEGEND_LIGHT        = ['#16a34a', '#2563eb', '#d97706', '#dc2626'];
+const LEGEND_DARK         = ['#22c55e', '#5b9bd5', '#fbbf24', '#f87171'];
 
 function DonutChart({ data, isDark }) {
   const canvasRef = useRef(null);
@@ -570,26 +602,39 @@ function App() {
   /* Meal voucher net monthly amount */
   const mvNet = mealVoucher ? (parseFloat(mealAmount) || 0) : 0;
 
-  /* Base monthly calculation */
+  /* Base monthly calculation — respects custom profile if active */
   const baseResult = useMemo(() => {
+    if (useCustom) {
+      if (activeInput === 'gross') {
+        return calcCustom(parseFloat(grossRaw) || 0, customRates, mvNet);
+      } else {
+        const targetNet = (parseFloat(netRaw) || 0) - mvNet;
+        const grossEst  = grossFromNetCustom(Math.max(0, targetNet), customRates);
+        return calcCustom(grossEst, customRates, mvNet);
+      }
+    }
     if (activeInput === 'gross') {
       return calcRO(parseFloat(grossRaw) || 0, mvNet);
     } else {
-      const targetNet = (parseFloat(netRaw) || 0) - mvNet; // vouchers come on top of net
+      const targetNet = (parseFloat(netRaw) || 0) - mvNet;
       const grossEst  = grossFromNet(Math.max(0, targetNet), 0);
       return calcRO(grossEst, mvNet);
     }
-  }, [grossRaw, netRaw, activeInput, mvNet]);
+  }, [grossRaw, netRaw, activeInput, mvNet, useCustom, customRates]);
 
   /* Bonus base result */
   const bonusVal = parseFloat(bonus) || 0;
   const bonusResult = useMemo(() => {
-    if (bonusMode === 'gross') return bonusVal > 0 ? calcRO(bonusVal, 0) : null;
-    /* bonus net → gross via binary search */
     if (bonusVal <= 0) return null;
+    if (useCustom) {
+      if (bonusMode === 'gross') return calcCustom(bonusVal, customRates, 0);
+      const grossEst = grossFromNetCustom(bonusVal, customRates);
+      return calcCustom(grossEst, customRates, 0);
+    }
+    if (bonusMode === 'gross') return calcRO(bonusVal, 0);
     const grossEst = grossFromNet(bonusVal, 0);
     return calcRO(grossEst, 0);
-  }, [bonusVal, bonusMode]);
+  }, [bonusVal, bonusMode, useCustom, customRates]);
 
   /* Period multiplier */
   const mult = PERIOD_MULT[period];
@@ -650,9 +695,7 @@ function App() {
     { label: 'Income tax',  value: Math.max(0, r.income_tax), },
   ].filter(d => d.value > 0);
 
-  const LEGEND_COLOURS_LIGHT = ['#166534','#1a5276','#92400e','#991b1b'];
-  const LEGEND_COLOURS_DARK  = ['#22c55e','#5b9bd5','#fbbf24','#f87171'];
-  const legendColours = isDark ? LEGEND_COLOURS_DARK : LEGEND_COLOURS_LIGHT;
+  const legendColours = isDark ? LEGEND_DARK : LEGEND_LIGHT;
 
   /* ── Shared card style helpers ── */
   const cH = { padding:'13px 18px', borderBottom:'1px solid var(--border)',
@@ -983,12 +1026,12 @@ function App() {
                 </div>
                 <div style={{ overflowX:'auto' }}>
                   <div style={{ minWidth:280 }}>
-                    <BreakdownRow label="Net salary"  amount={r.net}        percentage={pct(r.net,r.gross)}        color={isDark?'#22c55e':'#166534'} />
-                    <BreakdownRow label="CAS"         amount={r.cas}        percentage={pct(r.cas,r.gross)}        color={isDark?'#5b9bd5':'#1a5276'} />
-                    <BreakdownRow label="CASS"        amount={r.cass}       percentage={pct(r.cass,r.gross)}       color={isDark?'#fbbf24':'#92400e'} />
-                    <BreakdownRow label="Income tax"  amount={r.income_tax} percentage={pct(r.income_tax,r.gross)} color={isDark?'#f87171':'#991b1b'} />
+                    <BreakdownRow label="Net salary"  amount={r.net}        percentage={pct(r.net,r.gross)}        color={legendColours[0]} />
+                    <BreakdownRow label="CAS"         amount={r.cas}        percentage={pct(r.cas,r.gross)}        color={legendColours[1]} />
+                    <BreakdownRow label="CASS"        amount={r.cass}       percentage={pct(r.cass,r.gross)}       color={legendColours[2]} />
+                    <BreakdownRow label="Income tax"  amount={r.income_tax} percentage={pct(r.income_tax,r.gross)} color={legendColours[3]} />
                     {mealVoucher && r.mealVoucherNet > 0 && (
-                      <BreakdownRow label="Meal vouchers (+)" amount={r.mealVoucherNet} percentage="—" color={isDark?'#22c55e':'#166534'} />
+                      <BreakdownRow label="Meal vouchers (+)" amount={r.mealVoucherNet} percentage="—" color={legendColours[0]} />
                     )}
                     <div style={{ height:8 }}></div>
                     <div style={{ padding:'0 12px 12px' }}>
@@ -1022,8 +1065,8 @@ function App() {
             {/* Romanian tax formula card */}
             <div className="glass">
               <div style={cH}>
-                <span style={cT}>Romanian tax formula 2026</span>
-                <span style={{ fontSize:10, color:'var(--text-muted)' }}>Law 227/2015 · amended 2026</span>
+                <span style={cT}>{useCustom ? 'Custom tax profile' : 'Romanian tax formula 2026'}</span>
+                <span style={{ fontSize:10, color:'var(--text-muted)' }}>{useCustom ? 'User-defined rates' : 'Law 227/2015 · amended 2026'}</span>
               </div>
               <div className="formula-grid" style={{ padding:'12px 18px', display:'grid',
                 gridTemplateColumns:'repeat(3,1fr)', gap:10 }}>
