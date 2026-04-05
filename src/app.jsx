@@ -805,7 +805,7 @@ function App() {
           style={{ background:'none', border:'none', cursor:'pointer', display:'flex', alignItems:'center', padding:0, flexShrink:0 }}
           title="Refresh page">
           <img src="tahlogo.svg" alt="Tudor Andrei Halasag" className="logo-img"
-            style={{ height:38, width:'auto', display:'block' }} />
+            style={{ height:30, width:'auto', display:'block' }} />
         </button>
 
         <div style={{ display:'flex', alignItems:'center', gap:10 }}>
@@ -1133,7 +1133,7 @@ function App() {
             style={{ background:'none', border:'none', cursor:'pointer', display:'flex', alignItems:'center', padding:0 }}
             title="Refresh page">
             <img src="tahlogo.svg" alt="Tudor Andrei Halasag" className="logo-img"
-              style={{ height:28, width:'auto', display:'block' }} />
+              style={{ height:18, width:'auto', display:'block' }} />
           </button>
           <span style={{ fontSize:14, color:'var(--text-muted)' }}>·</span>
           <span style={{ fontSize:12, color:'var(--text-muted)', fontStyle:'italic', whiteSpace:'nowrap' }}>
