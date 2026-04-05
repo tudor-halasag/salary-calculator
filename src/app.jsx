@@ -795,7 +795,7 @@ function App() {
       {/* ══════════ HEADER ══════════ */}
       <header className="no-print glass" style={{
         display:'flex', alignItems:'center', justifyContent:'space-between',
-        padding:'0 24px', height:72,
+        padding:'0 24px', height:58,
         borderRadius:0, borderLeft:'none', borderRight:'none', borderTop:'none',
         position:'sticky', top:0, zIndex:200,
       }}>
@@ -805,7 +805,7 @@ function App() {
           style={{ background:'none', border:'none', cursor:'pointer', display:'flex', alignItems:'center', padding:0, flexShrink:0 }}
           title="Refresh page">
           <img src="tahlogo.svg" alt="Tudor Andrei Halasag" className="logo-img"
-            style={{ width:380, height:'auto', maxHeight:68, objectFit:'contain', display:'block' }} />
+            style={{ height:50, width:'auto', objectFit:'contain', display:'block' }} />
         </button>
 
         <div style={{ display:'flex', alignItems:'center', gap:10 }}>
