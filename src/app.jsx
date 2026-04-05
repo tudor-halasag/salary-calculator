@@ -803,7 +803,7 @@ function App() {
         <button
           onClick={() => { handleReset(); window.scrollTo({top:0,behavior:'smooth'}); }}
           style={{ background:'none', border:'none', cursor:'pointer', display:'flex', alignItems:'center', padding:0, flexShrink:0 }}
-          title="Reset & back to top">
+          title="Refresh page">
           <img src="tahlogo.svg" alt="Tudor Andrei Halasag" className="logo-img"
             style={{ width:320, height:'auto', maxHeight:64, objectFit:'contain', display:'block' }} />
         </button>
@@ -1131,7 +1131,7 @@ function App() {
           {/* Logo — refreshes page */}
           <button onClick={() => { handleReset(); window.scrollTo({top:0,behavior:'smooth'}); }}
             style={{ background:'none', border:'none', cursor:'pointer', display:'flex', alignItems:'center', padding:0 }}
-            title="Reset & back to top">
+            title="Refresh page">
             <img src="tahlogo.svg" alt="Tudor Andrei Halasag" className="logo-img"
               style={{ height:56, width:'auto', display:'block' }} />
           </button>
