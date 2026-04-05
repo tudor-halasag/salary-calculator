@@ -805,7 +805,7 @@ function App() {
           style={{ background:'none', border:'none', cursor:'pointer', display:'flex', alignItems:'center', padding:0, flexShrink:0 }}
           title="Reset & back to top">
           <img src="tahlogo.svg" alt="Tudor Andrei Halasag" className="logo-img"
-            style={{ width:260, height:'auto', objectFit:'contain', display:'block' }} />
+            style={{ width:260, height:56, objectFit:'contain', display:'block' }} />
         </button>
 
         <div style={{ display:'flex', alignItems:'center', gap:10 }}>
