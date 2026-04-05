@@ -6,102 +6,121 @@
   <title>Tudor Andrei Halasag — Salary Calculator</title>
   <meta name="description" content="Real-time Romanian gross-to-net salary calculator with live currency conversion. Built by Tudor Andrei Halasag." />
 
-  <!-- Favicons -->
+  <!-- ── Favicons ── -->
   <link rel="icon" type="image/svg+xml" href="tahfavblack.svg" />
-  <link rel="icon" type="image/png" href="apple-black-icon.png" sizes="180x180" />
+  <link rel="icon" type="image/png" sizes="180x180" href="apple-black-icon.png" />
   <link rel="apple-touch-icon" href="apple-black-icon.png" />
   <link rel="shortcut icon" href="tahfavblack.svg" />
   <meta name="theme-color" content="#000000" />
 
-  <!-- Open Graph / Search preview -->
+  <!-- ── Open Graph ── -->
   <meta property="og:title" content="Tudor Andrei Halasag — Salary Calculator" />
   <meta property="og:description" content="Real-time Romanian gross-to-net salary calculator with live currency conversion." />
-  <meta property="og:image" content="apple-black-icon.png" />
+  <meta property="og:image" content="https://tudor-halasag.github.io/salary-calculator/apple-black-icon.png" />
   <meta property="og:url" content="https://tudor-halasag.github.io/salary-calculator/" />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:image" content="apple-black-icon.png" />
+  <meta name="twitter:image" content="https://tudor-halasag.github.io/salary-calculator/apple-black-icon.png" />
 
-  <!-- Fonts -->
+  <!-- ── Fonts ── -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@600&display=swap" rel="stylesheet" />
 
-  <!-- React 18 + Babel + Chart.js -->
+  <!-- ── Libraries ── -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <!-- jsPDF for clean single-page PDF export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ── CSS variables ── */
+    /* ════════════════════════════════════════
+       CSS VARIABLES — light mode (default)
+       Background: BLACK canvas, dark particles
+       We still need card colours on top of it
+    ════════════════════════════════════════ */
     :root {
-      --bg:            transparent;
-      --bg-card:       rgba(255,255,255,0.82);
-      --bg-input:      rgba(240,239,234,0.9);
-      --bg-accent:     #0a0a0a;
-      --text-primary:  #0a0a0a;
-      --text-secondary:#5a5a5a;
-      --text-muted:    #8a8a8a;
-      --text-on-dark:  #ffffff;
-      --border:        rgba(0,0,0,0.10);
-      --border-strong: rgba(0,0,0,0.18);
-      --accent:        #1a5276;
-      --accent-light:  rgba(26,82,118,0.12);
-      --green:         #1a7a4a;
-      --green-light:   rgba(26,122,74,0.12);
-      --amber:         #b45309;
-      --amber-light:   rgba(180,83,9,0.10);
-      --purple:        #6d28d9;
-      --purple-light:  rgba(109,40,217,0.10);
-      --hero-bg:       rgba(10,10,10,0.88);
-      --hero-text:     #ffffff;
-      --hero-muted:    rgba(255,255,255,0.45);
-      --hero-sub:      rgba(255,255,255,0.72);
-      --glow-focus:    0 0 0 3px rgba(26,82,118,0.22), 0 0 18px rgba(26,82,118,0.16);
-      --glow-idle:     0 0 0 1.5px rgba(0,0,0,0.06), 0 2px 14px rgba(0,0,0,0.08);
-      --font:          'DM Sans', sans-serif;
-      --mono:          'DM Mono', monospace;
-      --serif:         'Playfair Display', serif;
-      --radius:        14px;
-      --radius-sm:     9px;
-      --shadow:        0 2px 8px rgba(0,0,0,0.07), 0 8px 28px rgba(0,0,0,0.07);
-      --card-blur:     blur(12px) saturate(160%);
-      --transition:    0.18s cubic-bezier(0.4,0,0.2,1);
+      --bg-card:        rgba(255,255,255,0.84);
+      --bg-input:       rgba(238,237,232,0.92);
+      --bg-accent:      #0a0a0a;
+      --text-primary:   #0a0a0a;
+      --text-secondary: #555555;
+      --text-muted:     #888888;
+      --text-on-dark:   #ffffff;
+      --border:         rgba(0,0,0,0.11);
+      --border-strong:  rgba(0,0,0,0.20);
+      --accent:         #1a5276;
+      --accent-light:   rgba(26,82,118,0.13);
+      --green:          #166534;
+      --green-light:    rgba(22,101,52,0.13);
+      --amber:          #92400e;
+      --amber-light:    rgba(146,64,14,0.11);
+      --red:            #991b1b;
+      --red-light:      rgba(153,27,27,0.11);
+      --purple:         #5b21b6;
+      --purple-light:   rgba(91,33,182,0.11);
+      --hero-bg:        rgba(8,8,8,0.90);
+      --hero-text:      #ffffff;
+      --hero-muted:     rgba(255,255,255,0.42);
+      --hero-sub:       rgba(255,255,255,0.70);
+      --hero-border:    rgba(255,255,255,0.08);
+      --glow-focus:     0 0 0 3px rgba(26,82,118,0.22), 0 0 18px rgba(26,82,118,0.14);
+      --glow-idle:      0 0 0 1.5px rgba(0,0,0,0.07), 0 2px 12px rgba(0,0,0,0.09);
+      --font:           'DM Sans', sans-serif;
+      --mono:           'DM Mono', monospace;
+      --serif:          'Playfair Display', serif;
+      --radius:         14px;
+      --radius-sm:      9px;
+      --shadow:         0 2px 10px rgba(0,0,0,0.09), 0 8px 30px rgba(0,0,0,0.08);
+      --card-blur:      blur(14px) saturate(170%);
+      /* particle colours — light mode: dark dots on black bg
+         (black bg is always there, light mode uses darker particles) */
+      --p-particle: #4a7fa5;
+      --p-link:     #3a6f95;
     }
 
+    /* ════════════════════════════════════════
+       DARK MODE overrides
+       Background stays BLACK. Cards go dark.
+       Particles become WHITE/LIGHT.
+    ════════════════════════════════════════ */
     [data-theme="dark"] {
-      --bg-card:       rgba(22,22,20,0.82);
-      --bg-input:      rgba(30,30,28,0.90);
-      --bg-accent:     rgba(240,239,233,0.92);
-      --text-primary:  #f0efe9;
-      --text-secondary:#9a9a94;
-      --text-muted:    #5a5a58;
-      --text-on-dark:  #0a0a0a;
-      --border:        rgba(255,255,255,0.08);
-      --border-strong: rgba(255,255,255,0.14);
-      --accent:        #5b9bd5;
-      --accent-light:  rgba(91,155,213,0.15);
-      --green:         #34d399;
-      --green-light:   rgba(52,211,153,0.12);
-      --amber:         #fbbf24;
-      --amber-light:   rgba(251,191,36,0.11);
-      --purple:        #a78bfa;
-      --purple-light:  rgba(167,139,250,0.12);
-      --hero-bg:       rgba(240,239,233,0.92);
-      --hero-text:     #0a0a0a;
-      --hero-muted:    rgba(10,10,10,0.45);
-      --hero-sub:      rgba(10,10,10,0.72);
-      --glow-focus:    0 0 0 3px rgba(91,155,213,0.28), 0 0 18px rgba(91,155,213,0.18);
-      --glow-idle:     0 0 0 1.5px rgba(255,255,255,0.06), 0 2px 14px rgba(255,255,255,0.05);
-      --shadow:        0 2px 8px rgba(0,0,0,0.35), 0 8px 28px rgba(0,0,0,0.28);
+      --bg-card:        rgba(18,18,16,0.84);
+      --bg-input:       rgba(28,28,26,0.92);
+      --bg-accent:      rgba(238,237,232,0.94);
+      --text-primary:   #f0efe9;
+      --text-secondary: #9a9a94;
+      --text-muted:     #585856;
+      --text-on-dark:   #0a0a0a;
+      --border:         rgba(255,255,255,0.09);
+      --border-strong:  rgba(255,255,255,0.16);
+      --accent:         #5b9bd5;
+      --accent-light:   rgba(91,155,213,0.16);
+      --green:          #16a34a;
+      --green-light:    rgba(22,163,74,0.13);
+      --amber:          #d97706;
+      --amber-light:    rgba(217,119,6,0.13);
+      --red:            #dc2626;
+      --red-light:      rgba(220,38,38,0.13);
+      --purple:         #7c3aed;
+      --purple-light:   rgba(124,58,237,0.13);
+      --hero-bg:        rgba(238,237,232,0.94);
+      --hero-text:      #0a0a0a;
+      --hero-muted:     rgba(10,10,10,0.42);
+      --hero-sub:       rgba(10,10,10,0.70);
+      --hero-border:    rgba(0,0,0,0.10);
+      --glow-focus:     0 0 0 3px rgba(91,155,213,0.28), 0 0 18px rgba(91,155,213,0.16);
+      --glow-idle:      0 0 0 1.5px rgba(255,255,255,0.07), 0 2px 12px rgba(255,255,255,0.05);
+      --shadow:         0 2px 10px rgba(0,0,0,0.40), 0 8px 30px rgba(0,0,0,0.30);
+      /* dark mode: white/bright particles */
+      --p-particle: #c9e7ff;
+      --p-link:     #7dd3fc;
     }
 
-    html { scroll-behavior: smooth; height: 100%; }
+    html { scroll-behavior: smooth; }
 
     body {
       font-family: var(--font);
@@ -109,31 +128,24 @@
       min-height: 100vh;
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
-      /* pitch-black base for the particle canvas */
-      background: #000000;
-      transition: color var(--transition);
+      background: #000000; /* always black — canvas sits on top */
+      transition: color 0.2s ease;
     }
 
-    /* ── Background canvas ── */
+    /* ── Particle canvas ── */
     #bg-canvas {
-      position: fixed;
-      inset: 0;
-      width: 100vw;
-      height: 100vh;
-      display: block;
-      z-index: 0;
+      position: fixed; inset: 0;
+      width: 100vw; height: 100vh;
+      display: block; z-index: 0;
       pointer-events: none;
     }
 
     #root {
-      position: relative;
-      z-index: 1;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+      position: relative; z-index: 1;
+      min-height: 100vh; display: flex; flex-direction: column;
     }
 
-    /* ── Glassmorphism card ── */
+    /* ── Glass card ── */
     .glass {
       background: var(--bg-card);
       backdrop-filter: var(--card-blur);
@@ -144,12 +156,11 @@
       overflow: hidden;
     }
 
-    /* ── Range slider ── */
+    /* ── Range sliders ── */
     input[type=range] {
       -webkit-appearance: none; appearance: none;
       width: 100%; height: 4px; border-radius: 2px;
       background: var(--border); outline: none; cursor: pointer;
-      transition: background var(--transition);
     }
     input[type=range]::-webkit-slider-thumb {
       -webkit-appearance: none; appearance: none;
@@ -158,10 +169,10 @@
       border: 3px solid var(--bg-card);
       box-shadow: 0 0 0 1.5px var(--border-strong);
       cursor: pointer;
-      transition: transform 0.14s ease, box-shadow 0.14s ease;
+      transition: transform 0.13s ease, box-shadow 0.13s ease;
     }
     input[type=range]:hover::-webkit-slider-thumb {
-      transform: scale(1.2);
+      transform: scale(1.22);
       box-shadow: 0 0 0 3px var(--accent-light);
     }
     input[type=range]::-moz-range-thumb {
@@ -169,33 +180,31 @@
       background: var(--accent); border: 3px solid var(--bg-card); cursor: pointer;
     }
 
-    /* ── Number inputs ── */
+    /* ── Number input — no spinners ── */
     input[type=number]::-webkit-outer-spin-button,
     input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     input[type=number] { -moz-appearance: textfield; }
 
-    /* ── Animations ── */
+    /* ── Keyframes ── */
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(8px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from { opacity:0; transform:translateY(8px); }
+      to   { opacity:1; transform:translateY(0); }
     }
     @keyframes pulseNum {
-      0%   { opacity: 1; }
-      30%  { opacity: 0.3; }
-      100% { opacity: 1; }
+      0%  { opacity:1; } 30% { opacity:0.3; } 100% { opacity:1; }
     }
     @keyframes greenGlow {
-      0%,100% { box-shadow: 0 0 7px rgba(34,197,94,0.5), 0 0 20px rgba(34,197,94,0.25); }
-      50%      { box-shadow: 0 0 13px rgba(34,197,94,0.8), 0 0 36px rgba(34,197,94,0.35); }
+      0%,100% { box-shadow: 0 0 7px rgba(34,197,94,0.55), 0 0 22px rgba(34,197,94,0.28); }
+      50%      { box-shadow: 0 0 14px rgba(34,197,94,0.85), 0 0 38px rgba(34,197,94,0.38); }
     }
 
-    .animate-in  { animation: fadeUp 0.28s ease forwards; }
-    .pulse-num   { animation: pulseNum 0.26s ease; }
+    .animate-in { animation: fadeUp 0.28s ease forwards; }
+    .pulse-num  { animation: pulseNum 0.26s ease; }
 
-    /* ── Logo invert in dark ── */
+    /* ── Logo: dark mode → white ── */
     [data-theme="dark"] .logo-img { filter: invert(1); }
 
-    /* ── About me glowing button ── */
+    /* ── About me button ── */
     .btn-about {
       display: inline-flex; align-items: center; gap: 6px;
       padding: 7px 16px; border-radius: 20px;
@@ -203,35 +212,45 @@
       color: #fff; background: #16a34a;
       border: none; cursor: pointer; text-decoration: none;
       animation: greenGlow 2.6s ease-in-out infinite;
-      transition: transform 0.14s ease, filter 0.14s ease;
+      transition: transform 0.13s ease, filter 0.13s ease;
       white-space: nowrap; flex-shrink: 0;
     }
-    .btn-about:hover { transform: scale(1.05); filter: brightness(1.12); }
+    .btn-about:hover { transform: scale(1.05); filter: brightness(1.13); }
 
-    /* ── Theme toggle icon btn ── */
+    /* ── Icon button ── */
     .icon-btn {
       width: 34px; height: 34px; border-radius: 8px;
       border: 1px solid var(--border); background: var(--bg-input);
       cursor: pointer; display: flex; align-items: center; justify-content: center;
-      color: var(--text-secondary); transition: all 0.14s ease; flex-shrink: 0;
+      color: var(--text-secondary); transition: all 0.13s ease; flex-shrink: 0;
     }
     .icon-btn:hover { border-color: var(--border-strong); }
+
+    /* ── Checkbox toggle ── */
+    .toggle-check {
+      width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent); flex-shrink: 0;
+    }
 
     /* ── Print ── */
     @media print {
       #bg-canvas, .no-print { display: none !important; }
       body { background: white !important; }
-      .glass { background: white !important; backdrop-filter: none !important; box-shadow: none !important; border: 1px solid #ddd !important; }
+      .glass {
+        background: white !important;
+        backdrop-filter: none !important;
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+      }
     }
-    .print-only { display: none; }
 
     /* ── Responsive ── */
     @media (max-width: 720px) {
-      .main-grid { grid-template-columns: 1fr !important; }
-      .panel-col { display: none !important; }
-      .mobile-settings-btn { display: flex !important; }
-      .inner-breakdown-grid { grid-template-columns: 1fr !important; }
-      .salary-inputs-row { flex-direction: column !important; }
+      .main-grid             { grid-template-columns: 1fr !important; }
+      .panel-col             { display: none !important; }
+      .mobile-settings-btn   { display: flex !important; }
+      .inner-breakdown-grid  { grid-template-columns: 1fr !important; }
+      .salary-inputs-row     { flex-direction: column !important; }
+      .formula-grid          { grid-template-columns: repeat(2,1fr) !important; }
     }
     @media (min-width: 721px) {
       .mobile-settings-btn { display: none !important; }
@@ -239,147 +258,155 @@
   </style>
 </head>
 <body>
-  <!-- Particle background canvas -->
-  <canvas id="bg-canvas"></canvas>
 
-  <div id="root"></div>
+<canvas id="bg-canvas"></canvas>
+<div id="root"></div>
 
-  <!-- Background particle script (runs immediately, before React) -->
-  <script>
-  (function() {
-    const isMobile = /Mobi|Android/i.test(navigator.userAgent) || window.innerWidth < 721;
+<!-- ══ PARTICLE BACKGROUND — theme-aware colours, updated config ══ -->
+<script>
+(function () {
+  const isMobile = /Mobi|Android/i.test(navigator.userAgent) || window.innerWidth < 721;
 
-    const CONFIG = {
-      baseDensity:    0.12,
-      maxSpeed:       0.6,
-      radius:         [1.0, 2.2],
-      linkDist:       110,
-      linkAlpha:      0.16,
-      mouseInfluence: 110,
-      repelStrength:  0.35,
-      clickBurst:     120,
-      colorParticle:  "#c9e7ff",
-      colorLink:      "#7dd3fc"
+  /* Config per your request */
+  const CFG = {
+    baseDensity:    1.5,
+    maxSpeed:       0.3,
+    radius:         [1.0, 3.0],
+    linkDist:       150,
+    linkAlpha:      0.20,
+    mouseInfluence: 110,
+    repelStrength:  0.35,
+    clickBurst:     120,
+  };
+
+  /* Read theme-aware colours from CSS variables */
+  function getColours() {
+    const s = getComputedStyle(document.documentElement);
+    return {
+      particle: (s.getPropertyValue('--p-particle') || '#c9e7ff').trim(),
+      link:     (s.getPropertyValue('--p-link')     || '#7dd3fc').trim(),
     };
+  }
 
-    const canvas = document.getElementById('bg-canvas');
-    const ctx = canvas.getContext('2d', { alpha: true });
-    let DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-    let W = 0, H = 0;
+  const canvas = document.getElementById('bg-canvas');
+  const ctx    = canvas.getContext('2d', { alpha: true });
+  let DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+  let W = 0, H = 0;
+  let colours = getColours();
 
-    function resize() {
-      DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-      W = canvas.width  = Math.floor(window.innerWidth  * DPR);
-      H = canvas.height = Math.floor(window.innerHeight * DPR);
-      canvas.style.width  = window.innerWidth  + 'px';
-      canvas.style.height = window.innerHeight + 'px';
-      computeCount();
+  /* Re-read colours whenever the theme attribute changes */
+  new MutationObserver(() => { colours = getColours(); })
+    .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  function resize() {
+    DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    W = canvas.width  = Math.floor(window.innerWidth  * DPR);
+    H = canvas.height = Math.floor(window.innerHeight * DPR);
+    canvas.style.width  = window.innerWidth  + 'px';
+    canvas.style.height = window.innerHeight + 'px';
+    syncCount();
+  }
+  window.addEventListener('resize', resize, { passive: true });
+
+  let particles = [];
+
+  function rand(a, b)   { return Math.random() * (b - a) + a; }
+  function clamp(v,a,b) { return Math.max(a, Math.min(b, v)); }
+
+  class Particle {
+    constructor() { this.reset(true); }
+    reset(rnd) {
+      this.x  = rnd ? rand(0, W) : (Math.random() < .5 ? 0 : W);
+      this.y  = rnd ? rand(0, H) : rand(0, H);
+      const ang = rand(0, Math.PI * 2), sp = rand(0.02, CFG.maxSpeed);
+      this.vx = Math.cos(ang) * sp;
+      this.vy = Math.sin(ang) * sp;
+      this.r  = rand(CFG.radius[0], CFG.radius[1]) * DPR;
     }
-    window.addEventListener('resize', resize, { passive: true });
-
-    let particles = [];
-
-    function rand(a, b) { return Math.random() * (b - a) + a; }
-    function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
-
-    class Particle {
-      constructor() { this.reset(true); }
-      reset(rnd) {
-        this.x = rnd ? rand(0, W) : (Math.random() < .5 ? 0 : W);
-        this.y = rnd ? rand(0, H) : rand(0, H);
-        const ang = rand(0, Math.PI * 2), sp = rand(0.05, CONFIG.maxSpeed);
-        this.vx = Math.cos(ang) * sp;
-        this.vy = Math.sin(ang) * sp;
-        this.r = rand(CONFIG.radius[0], CONFIG.radius[1]) * DPR;
-      }
-      step(mx, my) {
-        /* Mouse influence — desktop only */
-        if (!isMobile && mx !== null && my !== null) {
-          const dx = this.x - mx, dy = this.y - my;
-          const d2 = dx*dx + dy*dy;
-          const rr = CONFIG.mouseInfluence * DPR;
-          if (d2 < rr*rr) {
-            const d = Math.sqrt(d2) || 0.001;
-            const f = CONFIG.repelStrength * (1 - d/rr);
-            this.vx += (dx/d) * f;
-            this.vy += (dy/d) * f;
-          }
+    step(mx, my) {
+      if (!isMobile && mx !== null && my !== null) {
+        const dx = this.x - mx, dy = this.y - my;
+        const d2 = dx*dx + dy*dy, rr = CFG.mouseInfluence * DPR;
+        if (d2 < rr*rr) {
+          const d = Math.sqrt(d2) || 0.001;
+          const f = CFG.repelStrength * (1 - d/rr);
+          this.vx += (dx/d)*f; this.vy += (dy/d)*f;
         }
-        const sp = Math.hypot(this.vx, this.vy);
-        if (sp > CONFIG.maxSpeed) { this.vx *= CONFIG.maxSpeed/sp; this.vy *= CONFIG.maxSpeed/sp; }
-        this.x += this.vx * DPR;
-        this.y += this.vy * DPR;
-        if (this.x < -50) this.x = W + 50;
-        if (this.x > W+50) this.x = -50;
-        if (this.y < -50) this.y = H + 50;
-        if (this.y > H+50) this.y = -50;
       }
-      draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
-        ctx.fillStyle = CONFIG.colorParticle;
-        ctx.globalAlpha = 0.9;
-        ctx.fill();
+      const sp = Math.hypot(this.vx, this.vy);
+      if (sp > CFG.maxSpeed) { this.vx *= CFG.maxSpeed/sp; this.vy *= CFG.maxSpeed/sp; }
+      this.x += this.vx * DPR;
+      this.y += this.vy * DPR;
+      if (this.x < -50)   this.x = W + 50;
+      if (this.x > W+50)  this.x = -50;
+      if (this.y < -50)   this.y = H + 50;
+      if (this.y > H+50)  this.y = -50;
+    }
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
+      ctx.fillStyle = colours.particle;
+      ctx.globalAlpha = 0.88;
+      ctx.fill();
+    }
+  }
+
+  function syncCount() {
+    const area   = (W * H) / (DPR * DPR);
+    const target = clamp(Math.round(CFG.baseDensity * area / 10000), 60, 300);
+    while (particles.length < target) particles.push(new Particle());
+    if (particles.length > target) particles.length = target;
+  }
+
+  function drawLinks() {
+    ctx.lineWidth    = 1 * DPR;
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i+1; j < particles.length; j++) {
+        const a = particles[i], b = particles[j];
+        const dist = Math.hypot(a.x - b.x, a.y - b.y);
+        if (dist < CFG.linkDist * DPR) {
+          ctx.globalAlpha = CFG.linkAlpha * (1 - dist / (CFG.linkDist * DPR));
+          ctx.strokeStyle = colours.link;
+          ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+        }
       }
     }
+    ctx.globalAlpha = 1;
+  }
 
-    function computeCount() {
-      const area = (W*H) / (DPR*DPR);
-      let target = Math.round(CONFIG.baseDensity * (area / 10000));
-      target = clamp(target, 40, 220);
-      while (particles.length < target) particles.push(new Particle());
-      if (particles.length > target) particles.length = target;
-    }
-
-    const mouse = { x: null, y: null };
-    if (!isMobile) {
-      window.addEventListener('mousemove', e => { mouse.x = e.clientX * DPR; mouse.y = e.clientY * DPR; }, { passive: true });
-      window.addEventListener('mouseleave', () => { mouse.x = mouse.y = null; });
-      window.addEventListener('click', e => {
-        const mx = e.clientX * DPR, my = e.clientY * DPR;
-        particles.forEach(p => {
-          const dx = p.x - mx, dy = p.y - my;
-          const d2 = dx*dx + dy*dy, rr = CONFIG.mouseInfluence * DPR;
-          if (d2 < rr*rr) {
-            const d = Math.sqrt(d2) || 0.001;
-            p.vx += (dx/d) * (CONFIG.clickBurst/100);
-            p.vy += (dy/d) * (CONFIG.clickBurst/100);
-          }
-        });
+  const mouse = { x: null, y: null };
+  if (!isMobile) {
+    window.addEventListener('mousemove', e => { mouse.x = e.clientX*DPR; mouse.y = e.clientY*DPR; }, { passive:true });
+    window.addEventListener('mouseleave', () => { mouse.x = mouse.y = null; });
+    window.addEventListener('click', e => {
+      const mx = e.clientX*DPR, my = e.clientY*DPR;
+      particles.forEach(p => {
+        const dx = p.x-mx, dy = p.y-my;
+        const d2 = dx*dx+dy*dy, rr = CFG.mouseInfluence*DPR;
+        if (d2 < rr*rr) {
+          const d = Math.sqrt(d2)||0.001;
+          p.vx += (dx/d)*(CFG.clickBurst/100);
+          p.vy += (dy/d)*(CFG.clickBurst/100);
+        }
       });
-    }
+    });
+  }
 
-    function drawLinks() {
-      ctx.lineWidth = 1 * DPR;
-      ctx.strokeStyle = CONFIG.colorLink;
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i+1; j < particles.length; j++) {
-          const a = particles[i], b = particles[j];
-          const dist = Math.hypot(a.x - b.x, a.y - b.y);
-          if (dist < CONFIG.linkDist * DPR) {
-            ctx.globalAlpha = CONFIG.linkAlpha * (1 - dist / (CONFIG.linkDist * DPR));
-            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-          }
-        }
-      }
-      ctx.globalAlpha = 1;
-    }
+  function loop() {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => p.step(mouse.x, mouse.y));
+    drawLinks();
+    particles.forEach(p => p.draw());
+    requestAnimationFrame(loop);
+  }
 
-    function loop() {
-      ctx.clearRect(0, 0, W, H);
-      particles.forEach(p => p.step(mouse.x, mouse.y));
-      drawLinks();
-      particles.forEach(p => p.draw());
-      requestAnimationFrame(loop);
-    }
+  resize();
+  for (let i = 0; i < 120; i++) particles.push(new Particle());
+  syncCount();
+  loop();
+})();
+</script>
 
-    resize();
-    for (let i = 0; i < 120; i++) particles.push(new Particle());
-    computeCount();
-    loop();
-  })();
-  </script>
-
-  <script type="text/babel" src="src/app.jsx"></script>
+<script type="text/babel" src="src/app.jsx"></script>
 </body>
 </html>
