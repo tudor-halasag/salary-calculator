@@ -802,7 +802,7 @@ function App() {
         {/* Logo — refreshes current page */}
         <button
           onClick={() => { handleReset(); window.scrollTo({top:0,behavior:'smooth'}); }}
-          style={{ background:'none', border:'none', cursor:'pointer', display:'flex', alignItems:'center', padding:0, flexShrink:0 }}
+          style={{ background:'none', border:'none', cursor:'pointer', display:'flex', alignItems:'center', padding:0, flexShrink:0, marginLeft:40 }}
           title="Refresh page">
           <img src="tahlogo.svg" alt="Tudor Andrei Halasag" className="logo-img"
             style={{ height:24, width:'auto', display:'block' }} />
