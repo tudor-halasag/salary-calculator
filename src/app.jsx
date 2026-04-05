@@ -805,7 +805,7 @@ function App() {
           style={{ background:'none', border:'none', cursor:'pointer', display:'flex', alignItems:'center', padding:0, flexShrink:0 }}
           title="Reset & back to top">
           <img src="tahlogo.svg" alt="Tudor Andrei Halasag" className="logo-img"
-            style={{ width:180, height:40, objectFit:'contain', display:'block' }} />
+            style={{ width:260, height:'auto', objectFit:'contain', display:'block' }} />
         </button>
 
         <div style={{ display:'flex', alignItems:'center', gap:10 }}>
@@ -1133,7 +1133,7 @@ function App() {
             style={{ background:'none', border:'none', cursor:'pointer', display:'flex', alignItems:'center', padding:0 }}
             title="Reset & back to top">
             <img src="tahlogo.svg" alt="Tudor Andrei Halasag" className="logo-img"
-              style={{ height:22, width:'auto', display:'block' }} />
+              style={{ height:48, width:'auto', display:'block' }} />
           </button>
           <span style={{ fontSize:14, color:'var(--text-muted)' }}>·</span>
           <span style={{ fontSize:12, color:'var(--text-muted)', fontStyle:'italic', whiteSpace:'nowrap' }}>
