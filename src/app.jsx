@@ -795,7 +795,7 @@ function App() {
       {/* ══════════ HEADER ══════════ */}
       <header className="no-print glass" style={{
         display:'flex', alignItems:'center', justifyContent:'space-between',
-        padding:'0 24px', height:58,
+        padding:'0 24px', height:72,
         borderRadius:0, borderLeft:'none', borderRight:'none', borderTop:'none',
         position:'sticky', top:0, zIndex:200,
       }}>
