@@ -76,10 +76,10 @@
       --radius-sm:      9px;
       --shadow:         0 2px 10px rgba(0,0,0,0.09), 0 8px 30px rgba(0,0,0,0.08);
       --card-blur:      blur(14px) saturate(170%);
-      /* particle colours — light mode: dark dots on black bg
-         (black bg is always there, light mode uses darker particles) */
-      --p-particle: #4a7fa5;
-      --p-link:     #3a6f95;
+      /* light mode: BLACK particles on WHITE canvas */
+      --p-particle: #1a1a1a;
+      --p-link:     #444444;
+      --canvas-bg:  #ffffff;
     }
 
     /* ════════════════════════════════════════
@@ -115,9 +115,10 @@
       --glow-focus:     0 0 0 3px rgba(91,155,213,0.28), 0 0 18px rgba(91,155,213,0.16);
       --glow-idle:      0 0 0 1.5px rgba(255,255,255,0.07), 0 2px 12px rgba(255,255,255,0.05);
       --shadow:         0 2px 10px rgba(0,0,0,0.40), 0 8px 30px rgba(0,0,0,0.30);
-      /* dark mode: white/bright particles */
+      /* dark mode: WHITE/bright particles on BLACK canvas */
       --p-particle: #c9e7ff;
       --p-link:     #7dd3fc;
+      --canvas-bg:  #000000;
     }
 
     html { scroll-behavior: smooth; }
@@ -128,8 +129,8 @@
       min-height: 100vh;
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
-      background: #000000; /* always black — canvas sits on top */
-      transition: color 0.2s ease;
+      background: var(--canvas-bg);
+      transition: color 0.2s ease, background 0.2s ease;
     }
 
     /* ── Particle canvas ── */
@@ -285,6 +286,7 @@
     return {
       particle: (s.getPropertyValue('--p-particle') || '#c9e7ff').trim(),
       link:     (s.getPropertyValue('--p-link')     || '#7dd3fc').trim(),
+      bg:       (s.getPropertyValue('--canvas-bg')  || '#000000').trim(),
     };
   }
 
@@ -393,7 +395,8 @@
   }
 
   function loop() {
-    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = colours.bg;
+    ctx.fillRect(0, 0, W, H);
     particles.forEach(p => p.step(mouse.x, mouse.y));
     drawLinks();
     particles.forEach(p => p.draw());
