@@ -4,10 +4,9 @@ const { useState, useEffect, useRef, useMemo } = React;
    ROMANIAN SALARY CALCULATOR 2026
    Exact implementation of the Python reference provided.
    ═══════════════════════════════════════════════════════════════ */
-const MIN_WAGE    = 4050;
-const TAX_EXEMPT  = 300;   // valid until June 2026 (salariul minim)
-const MAX_DED     = 810;   // maximum personal deduction
-const MAX_THRESH  = MIN_WAGE + 2000; // 6050 — above this, no deduction
+const MIN_WAGE   = 4050;  // Romanian minimum wage 2026
+const MAX_DED    = 810;   // maximum personal deduction (gross ≤ 4050)
+const MAX_THRESH = MIN_WAGE + 2000; // 6050 — above this, deduction = 0
 
 function personalDeduction(gross) {
   if (gross <= MIN_WAGE)    return MAX_DED;
@@ -19,29 +18,28 @@ function personalDeduction(gross) {
 function calcRO(grossMonthly, mealVoucherNet = 0) {
   const g = Math.max(0, parseFloat(grossMonthly) || 0);
 
-  /* Step 1 — contribution base (minimum wage exemption) */
-  const contribBase = g <= MIN_WAGE ? Math.max(0, g - TAX_EXEMPT) : g;
+  /* Step 1 — social contributions are always on FULL gross salary.
+     The 300 RON tax-exempt applies as a cash supplement for min-wage workers,
+     it does NOT reduce the contribution base. */
+  const cas  = 0.25 * g;
+  const cass = 0.10 * g;
 
-  /* Step 2 — employee social contributions */
-  const cas  = 0.25 * contribBase;
-  const cass = 0.10 * contribBase;
-
-  /* Step 3 — personal deduction */
+  /* Step 2 — personal deduction */
   const dp = personalDeduction(g);
 
-  /* Step 4 — taxable income and income tax */
+  /* Step 3 — taxable income and income tax */
   const taxable    = Math.max(0, g - cas - cass - dp);
   const income_tax = 0.10 * taxable;
 
-  /* Step 5 — net (meal vouchers are added after tax, they are not taxed) */
+  /* Step 4 — net (meal vouchers added after tax, not taxed) */
   const net = g - cas - cass - income_tax + mealVoucherNet;
 
-  /* Step 6 — employer CAM */
+  /* Step 5 — employer CAM (2.25%) */
   const cam = 0.0225 * g;
 
-  /* Step 7 — minimum contribution adjustment (below min wage) */
+  /* Step 6 — min wage extra contributions (employer bears these) */
   let extra_cas = 0, extra_cass = 0;
-  if (g < MIN_WAGE) {
+  if (g > 0 && g < MIN_WAGE) {
     extra_cas  = Math.max(0, 0.25 * MIN_WAGE - cas);
     extra_cass = Math.max(0, 0.10 * MIN_WAGE - cass);
   }
@@ -50,7 +48,7 @@ function calcRO(grossMonthly, mealVoucherNet = 0) {
 
   return {
     gross: g, net, cas, cass, income_tax, dp,
-    contribBase, taxable,
+    contribBase: g, taxable,
     cam, extra_cas, extra_cass, total_cost,
     totalDeductions: cas + cass + income_tax,
     mealVoucherNet,
@@ -337,6 +335,75 @@ function PeriodPill({ label, active, onClick }) {
   );
 }
 
+/* ─── MealVoucherControl ─────────────────────────────────────────
+   Uses an UNCONTROLLED local draft for the number input so that
+   every keystroke is never interrupted by a React re-render.
+   The parent state is updated only on blur / Enter.
+   ─────────────────────────────────────────────────────────────── */
+function MealVoucherControl({ mealVoucher, setMealVoucher, mealAmount, setMealAmount }) {
+  const [draft, setDraft] = useState(String(mealAmount));
+
+  /* Keep draft in sync if parent resets */
+  useEffect(() => { setDraft(String(mealAmount)); }, [mealAmount]);
+
+  const commit = () => {
+    const v = parseFloat(draft);
+    if (!isNaN(v) && v >= 0) setMealAmount(v);
+    else setDraft(String(mealAmount));
+  };
+
+  return (
+    <div style={{ marginBottom:18, padding:'12px 14px', background:'var(--bg-input)',
+      borderRadius:'var(--radius-sm)', border:'1px solid var(--border)' }}>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between',
+        marginBottom: mealVoucher ? 10 : 0 }}>
+        <div>
+          <span style={{ fontSize:13, fontWeight:500, color:'var(--text-primary)' }}>Meal Vouchers</span>
+          <span style={{ fontSize:11, color:'var(--text-muted)', marginLeft:6 }}>tax-free</span>
+        </div>
+        {/* Toggle switch */}
+        <div onClick={() => setMealVoucher(v => !v)} style={{
+          width:36, height:20, borderRadius:10, position:'relative', cursor:'pointer',
+          background: mealVoucher ? 'var(--green)' : 'var(--border-strong)',
+          transition:'background 0.2s ease', flexShrink:0,
+        }}>
+          <div style={{
+            position:'absolute', top:2, left: mealVoucher ? 18 : 2,
+            width:16, height:16, borderRadius:'50%', background:'#fff',
+            transition:'left 0.2s ease', boxShadow:'0 1px 3px rgba(0,0,0,0.25)',
+          }} />
+        </div>
+      </div>
+
+      {mealVoucher && (
+        <div style={{ animation:'fadeUp 0.2s ease' }}>
+          <div style={{ fontSize:11, color:'var(--text-muted)', marginBottom:6 }}>
+            Monthly net amount (RON)
+          </div>
+          <div style={{ display:'flex', alignItems:'center', background:'var(--bg-card)',
+            border:'1px solid var(--border)', borderRadius:'var(--radius-sm)', overflow:'hidden' }}>
+            <span style={{ padding:'8px 10px', fontSize:12, fontFamily:'var(--mono)',
+              color:'var(--text-muted)', borderRight:'1px solid var(--border)',
+              minWidth:40, textAlign:'center' }}>RON</span>
+            <input
+              type="number" min="0" step="50"
+              value={draft}
+              onChange={e => setDraft(e.target.value)}
+              onBlur={commit}
+              onKeyDown={e => { if (e.key === 'Enter') { commit(); e.target.blur(); } }}
+              style={{ flex:1, border:'none', background:'transparent', padding:'8px 10px',
+                fontSize:14, fontFamily:'var(--mono)', color:'var(--text-primary)', outline:'none' }}
+            />
+          </div>
+          <div style={{ fontSize:10, color:'var(--text-muted)', marginTop:5 }}>
+            Added to net after tax — not subject to income tax or contributions
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─── Icons ─────────────────────────────────────────────────── */
 function SunIcon()  { return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>; }
 function MoonIcon() { return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg>; }
@@ -609,49 +676,12 @@ function App() {
       </div>
 
       {/* Meal vouchers */}
-      <div style={{ marginBottom:18, padding:'12px 14px', background:'var(--bg-input)',
-        borderRadius:'var(--radius-sm)', border:'1px solid var(--border)' }}>
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: mealVoucher ? 10 : 0 }}>
-          <div>
-            <span style={{ fontSize:13, fontWeight:500, color:'var(--text-primary)' }}>Meal Vouchers</span>
-            <span style={{ fontSize:11, color:'var(--text-muted)', marginLeft:6 }}>tax-free</span>
-          </div>
-          <label style={{ display:'flex', alignItems:'center', gap:6, cursor:'pointer' }}>
-            <div
-              onClick={() => setMealVoucher(v => !v)}
-              style={{
-                width:36, height:20, borderRadius:10, position:'relative', cursor:'pointer',
-                background: mealVoucher ? 'var(--green)' : 'var(--border-strong)',
-                transition:'background 0.2s ease',
-              }}>
-              <div style={{
-                position:'absolute', top:2, left: mealVoucher ? 18 : 2, width:16, height:16,
-                borderRadius:'50%', background:'#fff', transition:'left 0.2s ease',
-                boxShadow:'0 1px 3px rgba(0,0,0,0.2)',
-              }}></div>
-            </div>
-          </label>
-        </div>
-        {mealVoucher && (
-          <div style={{ animation:'fadeUp 0.2s ease' }}>
-            <div style={{ fontSize:11, color:'var(--text-muted)', marginBottom:6 }}>Monthly net amount (RON)</div>
-            <div style={{ display:'flex', alignItems:'center', background:'var(--bg-card)',
-              border:'1px solid var(--border)', borderRadius:'var(--radius-sm)', overflow:'hidden' }}>
-              <span style={{ padding:'8px 10px', fontSize:12, fontFamily:'var(--mono)',
-                color:'var(--text-muted)', borderRight:'1px solid var(--border)',
-                minWidth:40, textAlign:'center' }}>RON</span>
-              <input type="number" min="0" step="50" value={mealAmount}
-                onChange={e => setMealAmount(e.target.value)}
-                style={{ flex:1, border:'none', background:'transparent', padding:'8px 10px',
-                  fontSize:14, fontFamily:'var(--mono)', color:'var(--text-primary)', outline:'none' }}
-              />
-            </div>
-            <div style={{ fontSize:10, color:'var(--text-muted)', marginTop:5 }}>
-              Added to net after tax — not subject to income tax or social contributions
-            </div>
-          </div>
-        )}
-      </div>
+      <MealVoucherControl
+        mealVoucher={mealVoucher}
+        setMealVoucher={setMealVoucher}
+        mealAmount={mealAmount}
+        setMealAmount={setMealAmount}
+      />
 
       {/* Custom tax profile */}
       <div style={{ marginBottom:14 }}>
@@ -731,9 +761,8 @@ function App() {
           onClick={() => { handleReset(); window.scrollTo({top:0,behavior:'smooth'}); }}
           style={{ background:'none', border:'none', cursor:'pointer', display:'flex', alignItems:'center', padding:0, flexShrink:0 }}
           title="Reset & back to top">
-          <img src="tahlogo.svg" alt="Tudor Halasag" className="logo-img"
-            style={{ width:180, height:'auto', maxHeight:40, objectFit:'contain', display:'block' }}
-            onError={e => { e.target.style.display='none'; }} />
+          <img src="tahlogo.svg" alt="Tudor Andrei Halasag" className="logo-img"
+            style={{ width:180, height:40, objectFit:'contain', display:'block' }} />
         </button>
 
         <div style={{ display:'flex', alignItems:'center', gap:10 }}>
@@ -752,14 +781,15 @@ function App() {
       {/* ══════════ PAGE TITLE ══════════ */}
       <div className="no-print" style={{ textAlign:'center', padding:'24px 20px 4px' }}>
         <h1 style={{ fontFamily:'var(--serif)', fontSize:'clamp(20px,3.8vw,32px)',
-          fontWeight:600, color:'#ffffff', textShadow:'0 2px 20px rgba(0,0,0,0.7)',
+          fontWeight:600, color:'var(--text-primary)',
+          textShadow: isDark ? '0 2px 20px rgba(0,0,0,0.7)' : '0 1px 8px rgba(255,255,255,0.5)',
           letterSpacing:'-0.01em', lineHeight:1.2 }}>
           Salary Calculation Report
         </h1>
-        <p style={{ fontSize:13, color:'rgba(200,220,255,0.72)', marginTop:8 }}>
+        <p style={{ fontSize:13, color:'var(--text-secondary)', marginTop:8 }}>
           Real-time gross ⇄ net calculator &middot; All values in RON with real-time currency conversion
         </p>
-        <p style={{ fontSize:11, color:'rgba(180,200,230,0.42)', marginTop:5, fontStyle:'italic', fontWeight:300 }}>
+        <p style={{ fontSize:11, color:'var(--text-muted)', marginTop:5, fontStyle:'italic', fontWeight:300 }}>
           This tool provides estimates only and does not guarantee accuracy or official validity.
         </p>
       </div>
@@ -999,7 +1029,7 @@ function App() {
                 gridTemplateColumns:'repeat(3,1fr)', gap:10 }}>
                 {[
                   { label:'Gross',            val:`${fmt(r.gross)} RON`,        sub:'input',                    col:null },
-                  { label:'Contrib. base',    val:`${fmt(r.contribBase)} RON`,  sub: r.gross<=MIN_WAGE ? `gross − ${TAX_EXEMPT} RON exempt` : 'equals gross', col:null },
+                  { label:'Contribution base', val:`${fmt(r.contribBase)} RON`,  sub:'equals gross salary', col:null },
                   { label:'Personal deduct.', val:`${fmt(r.dp)} RON`,           sub:'tapers from 4050 to 6050', col:'var(--purple)' },
                   { label:'− CAS 25%',        val:`${fmt(r.cas)} RON`,          sub:`of contrib. base`,         col:'var(--accent)' },
                   { label:'− CASS 10%',       val:`${fmt(r.cass)} RON`,         sub:`of contrib. base`,         col:'var(--amber)'  },
@@ -1059,9 +1089,8 @@ function App() {
           <button onClick={() => { handleReset(); window.scrollTo({top:0,behavior:'smooth'}); }}
             style={{ background:'none', border:'none', cursor:'pointer', display:'flex', alignItems:'center', padding:0 }}
             title="Reset & back to top">
-            <img src="tahlogo.svg" alt="Tudor Halasag" className="logo-img"
-              style={{ height:22, width:'auto' }}
-              onError={e => { e.target.style.display='none'; }} />
+            <img src="tahlogo.svg" alt="Tudor Andrei Halasag" className="logo-img"
+              style={{ height:22, width:'auto', display:'block' }} />
           </button>
           <span style={{ fontSize:14, color:'var(--text-muted)' }}>·</span>
           <span style={{ fontSize:12, color:'var(--text-muted)', fontStyle:'italic', whiteSpace:'nowrap' }}>
