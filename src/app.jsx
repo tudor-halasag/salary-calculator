@@ -235,54 +235,39 @@ function DonutChart({ data, isDark }) {
   );
 }
 
-/* ─── Editable slider ────────────────────────────────────────── */
-function LabeledSlider({ label, value, min, max, step, color, onChange, description }) {
-  const [editing, setEditing] = useState(false);
-  const [draft,   setDraft]   = useState('');
-  const fill = clamp01((value - min) / (max - min)) * 100;
-
-  function clamp01(v) { return Math.max(0, Math.min(1, v)); }
+/* ─── Rate input (replaces slider — clean number field) ──────── */
+function RateInput({ label, value, min, max, color, onChange, description }) {
+  const [draft, setDraft] = useState('');
+  const [focused, setFocused] = useState(false);
 
   const commit = () => {
     const v = parseFloat(draft);
     if (!isNaN(v)) onChange(Math.max(min, Math.min(max, v)));
-    setEditing(false);
+    setFocused(false);
   };
 
   return (
-    <div style={{ marginBottom: 18 }}>
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6 }}>
+    <div style={{ marginBottom: 12 }}>
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:5 }}>
         <div>
           <span style={{ fontSize:13, fontWeight:500, color:'var(--text-primary)' }}>{label}</span>
           {description && <span style={{ fontSize:11, color:'var(--text-muted)', marginLeft:6 }}>{description}</span>}
         </div>
-        {editing ? (
+        <div style={{ display:'flex', alignItems:'center', background:'var(--bg-card)',
+          border:`1.5px solid ${focused ? color : 'var(--border)'}`,
+          borderRadius:'var(--radius-sm)', overflow:'hidden', transition:'border-color 0.14s' }}>
           <input
-            type="number" autoFocus value={draft}
+            type="number" min={min} max={max} step={0.01}
+            value={focused ? draft : value.toFixed(2)}
+            onFocus={() => { setDraft(value.toFixed(2)); setFocused(true); }}
             onChange={e => setDraft(e.target.value)}
             onBlur={commit}
-            onKeyDown={e => { if (e.key==='Enter') commit(); if (e.key==='Escape') setEditing(false); }}
-            style={{ width:72, fontFamily:'var(--mono)', fontSize:13, fontWeight:500, color,
-              background:'var(--bg-input)', border:`1.5px solid ${color}`,
-              borderRadius:20, padding:'2px 8px', outline:'none', textAlign:'center' }}
+            onKeyDown={e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') setFocused(false); }}
+            style={{ width:60, fontFamily:'var(--mono)', fontSize:13, fontWeight:500, color,
+              background:'transparent', border:'none', padding:'5px 6px', outline:'none', textAlign:'right' }}
           />
-        ) : (
-          <span onClick={() => { setDraft(value.toFixed(2)); setEditing(true); }}
-            title="Click to type exact value"
-            style={{ fontFamily:'var(--mono)', fontSize:13, fontWeight:500, color,
-              background:'var(--bg-input)', padding:'2px 10px', borderRadius:20,
-              border:'1px solid var(--border)', cursor:'text' }}>
-            {value.toFixed(2)}%
-          </span>
-        )}
-      </div>
-      <input type="range" min={min} max={max} step={step} value={value}
-        onChange={e => onChange(parseFloat(e.target.value))}
-        style={{ background:`linear-gradient(to right,${color} 0%,${color} ${fill}%,var(--border) ${fill}%,var(--border) 100%)` }}
-      />
-      <div style={{ display:'flex', justifyContent:'space-between', marginTop:2 }}>
-        <span style={{ fontSize:10, color:'var(--text-muted)' }}>{min}%</span>
-        <span style={{ fontSize:10, color:'var(--text-muted)' }}>{max}%</span>
+          <span style={{ fontSize:12, color:'var(--text-muted)', padding:'5px 8px 5px 2px', fontFamily:'var(--mono)' }}>%</span>
+        </div>
       </div>
     </div>
   );
@@ -441,17 +426,40 @@ function SunIcon()  { return <svg width="16" height="16" viewBox="0 0 24 24" fil
 function MoonIcon() { return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg>; }
 
 /* ─── PDF Export ─────────────────────────────────────────────── */
-function exportPDF(r, period, fxRates, convertCurrency, mealVoucher, mealAmount) {
+async function exportPDF(r, period, fxRates, convertCurrency, mealVoucher, mealAmount) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
   const pw = 210, mg = 18, cw = pw - mg*2;
   let y = 0;
 
-  /* Black header bar */
+  /* Black header bar — logo rendered from SVG via canvas */
   doc.setFillColor(10,10,10);
   doc.rect(0, 0, pw, 26, 'F');
-  doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(255,255,255);
-  doc.text('Tudor Andrei Halasag', mg, 11);
+
+  /* Render tahlogo.svg into an offscreen canvas, invert to white, embed in PDF */
+  await new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = 3;
+      const logoH = 14, logoW = Math.round(logoH * (img.naturalWidth / img.naturalHeight));
+      const cvs = document.createElement('canvas');
+      cvs.width  = logoW * scale;
+      cvs.height = logoH * scale;
+      const cx = cvs.getContext('2d');
+      /* White background so filter composites correctly */
+      cx.fillStyle = '#000';
+      cx.fillRect(0, 0, cvs.width, cvs.height);
+      /* Draw at 3× then invert to white */
+      cx.filter = 'invert(1)';
+      cx.drawImage(img, 0, 0, cvs.width, cvs.height);
+      const dataUrl = cvs.toDataURL('image/png');
+      doc.addImage(dataUrl, 'PNG', mg, 6, logoW, logoH);
+      resolve();
+    };
+    img.onerror = resolve; /* fallback — skip logo if fetch fails */
+    img.src = 'tahlogo.svg';
+  });
+
   doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(170,170,170);
   doc.text('Salary Calculation Report', mg, 18);
   doc.text(new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}), pw-mg, 18, {align:'right'});
@@ -483,13 +491,13 @@ function exportPDF(r, period, fxRates, convertCurrency, mealVoucher, mealAmount)
   doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(90,90,90);
   doc.text('BREAKDOWN', mg, y); y += 5;
   const rows = [
-    { label:'Net salary',   val:r.net,            pv:pct(r.net,r.gross),            c:[22,101,52]  },
+    { label:'Net salary',   val:r.net - r.mealVoucherNet, pv:pct(r.net - r.mealVoucherNet, r.gross), c:[22,101,52]  },
     { label:'CAS (25%)',    val:r.cas,            pv:pct(r.cas,r.gross),            c:[26,82,118]  },
     { label:'CASS (10%)',   val:r.cass,           pv:pct(r.cass,r.gross),           c:[146,64,14]  },
     { label:'Income tax',   val:r.income_tax,     pv:pct(r.income_tax,r.gross),     c:[153,27,27]  },
   ];
   if (mealVoucher && r.mealVoucherNet > 0)
-    rows.splice(1,0,{ label:'Meal vouchers', val:r.mealVoucherNet, pv:'—', c:[22,101,52] });
+    rows.splice(1,0,{ label:'Meal vouchers (+)', val:r.mealVoucherNet, pv:'+', c:[22,101,52] });
   rows.push({ label:'Gross salary', val:r.gross, pv:'100.0', c:[80,80,80], bold:true });
 
   rows.forEach((row,i) => {
@@ -499,7 +507,8 @@ function exportPDF(r, period, fxRates, convertCurrency, mealVoucher, mealAmount)
     doc.setFont('helvetica', row.bold?'bold':'normal'); doc.setFontSize(8.5); doc.setTextColor(30,30,30);
     doc.text(row.label, mg+9, y+rh/2+1.2);
     doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(120,120,120);
-    doc.text(row.pv+'%', pw-mg-58, y+rh/2+1.2, {align:'right'});
+    const pvText = (row.pv === '+' || row.pv === '—') ? row.pv : row.pv + '%';
+    doc.text(pvText, pw-mg-58, y+rh/2+1.2, {align:'right'});
     doc.setFont('helvetica',row.bold?'bold':'normal'); doc.setFontSize(8.5); doc.setTextColor(10,10,10);
     doc.text(`${fmt(row.val)} RON`, pw-mg, y+rh/2+1.2, {align:'right'});
     y += rh;
@@ -689,7 +698,7 @@ function App() {
 
   /* Donut — fixed colour order: Net(green), CAS(blue), CASS(yellow), IT(red) */
   const donutData = [
-    { label: 'Net salary',  value: Math.max(0, r.net),        },
+    { label: 'Net salary',  value: Math.max(0, r.net - r.mealVoucherNet), },
     { label: 'CAS',         value: Math.max(0, r.cas),        },
     { label: 'CASS',        value: Math.max(0, r.cass),       },
     { label: 'Income tax',  value: Math.max(0, r.income_tax), },
@@ -751,9 +760,9 @@ function App() {
                 Use custom rates instead of 2026 Romanian law
               </label>
             </div>
-            <LabeledSlider label="CAS (pension)"  value={customRates.cas}       min={0} max={40} step={0.01} color="var(--accent)" onChange={v => setCustomRates(r => ({...r, cas:v}))} />
-            <LabeledSlider label="CASS (health)"  value={customRates.cass}      min={0} max={25} step={0.01} color="var(--amber)"  onChange={v => setCustomRates(r => ({...r, cass:v}))} />
-            <LabeledSlider label="Income tax"     value={customRates.incomeTax} min={0} max={60} step={0.01} color="var(--red)"   description="flat rate" onChange={v => setCustomRates(r => ({...r, incomeTax:v}))} />
+            <RateInput label="CAS (pension)"  value={customRates.cas}       min={0} max={40} color="var(--accent)" onChange={v => setCustomRates(r => ({...r, cas:v}))} />
+            <RateInput label="CASS (health)"  value={customRates.cass}      min={0} max={25} color="var(--amber)"  onChange={v => setCustomRates(r => ({...r, cass:v}))} />
+            <RateInput label="Income tax"     value={customRates.incomeTax} min={0} max={60} color="var(--red)"   description="flat rate" onChange={v => setCustomRates(r => ({...r, incomeTax:v}))} />
           </div>
         )}
       </div>
@@ -841,26 +850,31 @@ function App() {
       <div className="mobile-settings-btn" style={{ display:'none', justifyContent:'center', padding:'10px 20px 0' }}>
         <button onClick={() => setMobilePanel(true)} style={{
           display:'flex', alignItems:'center', gap:7,
-          padding:'9px 20px', borderRadius:20,
-          border:'1px solid rgba(255,255,255,0.2)', background:'rgba(255,255,255,0.1)',
-          color:'#fff', fontSize:13, fontWeight:500, cursor:'pointer',
-          fontFamily:'var(--font)', backdropFilter:'blur(8px)',
+          padding:'9px 22px', borderRadius:20,
+          border:'1px solid var(--border-strong)',
+          background:'var(--bg-card)',
+          color:'var(--text-primary)',
+          fontSize:13, fontWeight:600, cursor:'pointer',
+          fontFamily:'var(--font)',
+          boxShadow:'var(--shadow)',
         }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="18" y2="18"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="18" y2="18"/></svg>
           Settings
         </button>
       </div>
 
       {/* ══════════ MAIN ══════════ */}
       <main style={{ flex:1, maxWidth:1100, width:'100%', margin:'0 auto', padding:'18px 16px 40px' }}>
-        <div className="main-grid" style={{ display:'grid', gridTemplateColumns:'272px 1fr', gap:16, alignItems:'start' }}>
+        <div className="main-grid" style={{ display:'grid', gridTemplateColumns: panelOpen ? '272px 1fr' : '1fr', gap:16, alignItems:'start', transition:'grid-template-columns 0.22s ease' }}>
 
-          {/* Settings panel */}
-          <div className="panel-col" style={{ display:'flex', flexDirection:'column' }}>
-            <div className="glass" style={{ padding:'16px' }}>
-              <SettingsContent />
+          {/* Settings panel — hidden when panelOpen=false */}
+          {panelOpen && (
+            <div className="panel-col" style={{ display:'flex', flexDirection:'column' }}>
+              <div className="glass" style={{ padding:'16px' }}>
+                <SettingsContent />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Results */}
           <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
@@ -1026,12 +1040,12 @@ function App() {
                 </div>
                 <div style={{ overflowX:'auto' }}>
                   <div style={{ minWidth:280 }}>
-                    <BreakdownRow label="Net salary"  amount={r.net}        percentage={pct(r.net,r.gross)}        color={legendColours[0]} />
+                    <BreakdownRow label="Net salary"  amount={r.net - r.mealVoucherNet} percentage={pct(r.net - r.mealVoucherNet, r.gross)} color={legendColours[0]} />
                     <BreakdownRow label="CAS"         amount={r.cas}        percentage={pct(r.cas,r.gross)}        color={legendColours[1]} />
                     <BreakdownRow label="CASS"        amount={r.cass}       percentage={pct(r.cass,r.gross)}       color={legendColours[2]} />
                     <BreakdownRow label="Income tax"  amount={r.income_tax} percentage={pct(r.income_tax,r.gross)} color={legendColours[3]} />
                     {mealVoucher && r.mealVoucherNet > 0 && (
-                      <BreakdownRow label="Meal vouchers (+)" amount={r.mealVoucherNet} percentage="—" color={legendColours[0]} />
+                      <BreakdownRow label="Meal vouchers (+)" amount={r.mealVoucherNet} percentage="+" color={legendColours[0]} />
                     )}
                     <div style={{ height:8 }}></div>
                     <div style={{ padding:'0 12px 12px' }}>
@@ -1077,7 +1091,7 @@ function App() {
                   { label:'− CAS 25%',        val:`${fmt(r.cas)} RON`,          sub:`of contrib. base`,         col:'var(--accent)' },
                   { label:'− CASS 10%',       val:`${fmt(r.cass)} RON`,         sub:`of contrib. base`,         col:'var(--amber)'  },
                   { label:'− Income tax 10%', val:`${fmt(r.income_tax)} RON`,   sub:`of taxable ${fmt(r.taxable)} RON`, col:'var(--red)' },
-                  { label:'= Net salary',     val:`${fmt(r.net)} RON`,          sub:`${pct(r.net,r.gross)}% of gross`, col:'var(--green)', bold:true },
+                  { label:'= Net salary',     val:`${fmt(r.net)} RON`,          sub:`${pct(r.net - r.mealVoucherNet, r.gross)}% of gross${r.mealVoucherNet > 0 ? ` + ${fmt(r.mealVoucherNet)} RON vouchers` : ''}`, col:'var(--green)', bold:true },
                   { label:'Employer CAM',     val:`${fmt(r.cam)} RON`,          sub:'2.25% (employer only)',    col:null },
                   { label:'Total cost',       val:`${fmt(r.total_cost)} RON`,   sub:'employer perspective',     col:null },
                 ].map((item,i) => (
