@@ -436,33 +436,39 @@ async function exportPDF(r, period, fxRates, convertCurrency, mealVoucher, mealA
   doc.setFillColor(10,10,10);
   doc.rect(0, 0, pw, 26, 'F');
 
-  /* Render tahlogo.svg into an offscreen canvas, invert to white, embed in PDF */
+  /* Render tahlogo.svg into an offscreen canvas, white on black, embed in PDF.
+     — logoH kept to 9 mm so it clears the subtitle line at y=18 mm
+     — aspect ratio derived from viewBox (754.88 × 224) = 3.3699…
+     — canvas rendered at 16× the PDF mm size for crisp diagonal strokes */
   await new Promise(resolve => {
     const img = new Image();
     img.onload = () => {
-      const scale = 3;
-      const logoH = 14, logoW = Math.round(logoH * (img.naturalWidth / img.naturalHeight));
+      const VB_W = 754.88, VB_H = 224;          // exact viewBox dims
+      const logoH = 9;                           // mm in PDF
+      const logoW = logoH * (VB_W / VB_H);      // ≈ 30.3 mm
+      const scale = 16;                          // px per mm — high enough for diagonals
+      const cW = Math.round(logoW * scale);
+      const cH = Math.round(logoH * scale);
       const cvs = document.createElement('canvas');
-      cvs.width  = logoW * scale;
-      cvs.height = logoH * scale;
+      cvs.width = cW; cvs.height = cH;
       const cx = cvs.getContext('2d');
-      /* White background so filter composites correctly */
-      cx.fillStyle = '#000';
-      cx.fillRect(0, 0, cvs.width, cvs.height);
-      /* Draw at 3× then invert to white */
-      cx.filter = 'invert(1)';
-      cx.drawImage(img, 0, 0, cvs.width, cvs.height);
+      cx.fillStyle = '#000000';
+      cx.fillRect(0, 0, cW, cH);
+      cx.filter = 'invert(1)';                   // black paths → white
+      cx.drawImage(img, 0, 0, cW, cH);
       const dataUrl = cvs.toDataURL('image/png');
-      doc.addImage(dataUrl, 'PNG', mg, 6, logoW, logoH);
+      /* Centre vertically in the 26 mm header */
+      const logoY = (26 - logoH) / 2;
+      doc.addImage(dataUrl, 'PNG', mg, logoY, logoW, logoH);
       resolve();
     };
-    img.onerror = resolve; /* fallback — skip logo if fetch fails */
+    img.onerror = resolve;
     img.src = 'tahlogo.svg';
   });
 
-  doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(170,170,170);
-  doc.text('Salary Calculation Report', mg, 18);
-  doc.text(new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}), pw-mg, 18, {align:'right'});
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(160,160,160);
+  doc.text('Salary Calculation Report', mg, 22);
+  doc.text(new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}), pw-mg, 22, {align:'right'});
   y = 34;
 
   /* Period label */
